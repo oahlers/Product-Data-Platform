@@ -1,0 +1,18 @@
+[
+  {
+    "sku": "DEMO-001",
+    "brand": "Fenty Skin",
+    "product_name": "Demo Moisturiser",
+    "description": "A lightweight moisturiser that hydrates skin and improves radiance.",
+    "marketing_text": "Everyday hydration.",
+    "inci": "AQUA, GLYCERIN, PHENOXYETHANOL, PARFUM, LINALOOL",
+    "warnings": "Avoid contact with eyes.",
+    "directions": "Apply daily after cleansing.",
+    "net_weight_g": 50.0,
+    "gross_weight_g": 85.0,
+    "width_mm": 40.0,
+    "depth_mm": 40.0,
+    "height_mm": 120.0,
+    "modified_at": "2026-10-09T07:00:00Z"
+  }
+]

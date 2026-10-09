@@ -1,0 +1,4 @@
+/target
+.env
+results/*.json
+!results/.gitkeep

@@ -1,0 +1,4 @@
+# translation
+
+Replace this placeholder with the final Copilot Studio instruction set for this module.
+The Rust MVP currently uses deterministic mock logic so it runs without paid AI services.
