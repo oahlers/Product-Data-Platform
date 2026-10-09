@@ -28,11 +28,21 @@ async fn health() -> Json<serde_json::Value> {
     Json(json!({"status": "ok"}))
 }
 
-async fn products(State(state): State<Arc<AppState>>) -> impl IntoResponse {
-    match state.product_store.products().await {
-        Ok(products) => (StatusCode::OK, Json(json!(products))),
-        Err(error) => internal_error(error),
-    }
+async fn products(
+    State(state): State<Arc<AppState>>
+) -> impl IntoResponse {
+
+    let products: Vec<_> =
+        state
+            .product_cache
+            .values()
+            .cloned()
+            .collect();
+
+    (
+        StatusCode::OK,
+        Json(json!(products))
+    )
 }
 
 async fn process_all(State(state): State<Arc<AppState>>) -> impl IntoResponse {

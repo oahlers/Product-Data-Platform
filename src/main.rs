@@ -1,6 +1,7 @@
 mod agents;
 mod ai;
 mod api;
+mod cache;
 mod models;
 mod orchestrator;
 mod scheduler;
@@ -8,13 +9,15 @@ mod state;
 mod status_engine;
 mod storage;
 
-use std::{net::SocketAddr, sync::Arc};
-
 use anyhow::Result;
 use state::AppState;
 use storage::{excel_store::ExcelStore, json_store::JsonStore};
 use tokio::net::TcpListener;
 use tracing::info;
+use std::{
+    net::SocketAddr,
+    sync::Arc,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -27,20 +30,31 @@ async fn main() -> Result<()> {
 
     
     let product_store = Arc::new(ExcelStore::new("data/excel"));
+    let products =
+    product_store
+        .products()
+        .await?;
+
+println!(
+    "Loaded {} products into cache",
+    products.len()
+);
+
+let cache =
+    products
+        .into_iter()
+        .map(|p| (p.sku.clone(), p))
+        .collect();
     let result_store = Arc::new(JsonStore::new("data/products.json", "results"));
     result_store.ensure_files().await?;
 
-    let state = Arc::new(AppState::new(product_store, result_store));
-
-    let product_store = Arc::new(ExcelStore::new("data/excel"));
-
-    let result_store =
-    Arc::new(JsonStore::new("data/products.json", "results"));
-
-    result_store.ensure_files().await?;
-
     let state =
-    Arc::new(AppState::new(product_store, result_store));
+    Arc::new(
+        AppState::new(
+            Arc::new(cache),
+            result_store,
+        )
+    );
 
     let mut scheduler = scheduler::start(Arc::clone(&state)).await?;
     let app = api::router(state);

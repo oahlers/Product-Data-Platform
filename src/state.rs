@@ -1,20 +1,24 @@
 use std::sync::Arc;
 
-use crate::storage::{excel_store::ExcelStore, json_store::JsonStore};
+use crate::{
+    cache::product_cache::ProductCache,
+    storage::json_store::JsonStore,
+};
 
 #[derive(Clone)]
 pub struct AppState {
-    pub product_store: Arc<ExcelStore>,
+    pub product_cache: Arc<ProductCache>,
     pub result_store: Arc<JsonStore>,
 }
 
 impl AppState {
     pub fn new(
-        product_store: Arc<ExcelStore>,
+        product_cache: Arc<ProductCache>,
         result_store: Arc<JsonStore>,
     ) -> Self {
+
         Self {
-            product_store,
+            product_cache,
             result_store,
         }
     }
