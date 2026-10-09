@@ -9,6 +9,7 @@ mod state;
 mod status_engine;
 mod storage;
 
+use crate::storage::product_source::ProductSource;
 use anyhow::Result;
 use state::AppState;
 use storage::{excel_store::ExcelStore, json_store::JsonStore};
@@ -32,7 +33,7 @@ async fn main() -> Result<()> {
     let product_store = Arc::new(ExcelStore::new("data/excel"));
     let products =
     product_store
-        .products()
+        .load_products()
         .await?;
 
 println!(

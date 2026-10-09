@@ -9,6 +9,10 @@ use chrono::Utc;
 use tokio::task;
 use tracing::{info, warn};
 
+use async_trait::async_trait;
+
+use super::product_source::ProductSource;
+
 use crate::models::product::Product;
 
 #[derive(Clone)]
@@ -23,17 +27,18 @@ impl ExcelStore {
         }
     }
 
-    pub async fn products(&self) -> Result<Vec<Product>> {
+    pub async fn load_products(&self) -> Result<Vec<Product>> {
         let directory = self.directory.clone();
 
         task::spawn_blocking(move || load_directory(&directory))
             .await
             .context("Excel reader task failed")?
     }
+    
 
     pub async fn product(&self, sku: &str) -> Result<Option<Product>> {
         Ok(self
-            .products()
+            .load_products()
             .await?
             .into_iter()
             .find(|product| product.sku.eq_ignore_ascii_case(sku)))
@@ -420,7 +425,7 @@ mod tests {
         let store = ExcelStore::new("data/excel");
 
         let products = store
-            .products()
+            .load_products()
             .await
             .expect("Excel products should load");
 
@@ -437,5 +442,16 @@ mod tests {
             !products.is_empty(),
             "No products were loaded from Excel"
         );
+    }
+}
+
+
+#[async_trait]
+impl ProductSource for ExcelStore {
+    async fn products(
+        &self,
+    ) -> anyhow::Result<Vec<Product>> {
+
+        self.load_products().await
     }
 }
