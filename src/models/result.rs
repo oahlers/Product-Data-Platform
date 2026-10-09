@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct ModuleResult {
     pub status: String,
     pub findings: Vec<String>,
+    pub provider: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
