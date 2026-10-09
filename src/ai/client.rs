@@ -17,10 +17,10 @@ impl AiClient for MockAiClient {
         input: &str,
     ) -> anyhow::Result<String> {
 
-        Ok(format!(
-            "PROMPT:\n{}\n\nINPUT:\n{}",
-            prompt,
-            input
-        ))
+    Ok(format!(
+        "Mock AI response generated.\n\nInput length: {}\nPrompt length: {}",
+         input.len(),
+        prompt.len()
+    ))
     }
 }
