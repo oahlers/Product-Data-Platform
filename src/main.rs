@@ -25,7 +25,7 @@ async fn main() -> Result<()> {
     store.ensure_files().await?;
     let state = Arc::new(AppState::new(store));
 
-    let scheduler = scheduler::start(Arc::clone(&state)).await?;
+    let mut scheduler = scheduler::start(Arc::clone(&state)).await?;
     let app = api::router(state);
     let address = SocketAddr::from(([0, 0, 0, 0], 3000));
     let listener = TcpListener::bind(address).await?;

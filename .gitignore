@@ -2,3 +2,6 @@
 .env
 results/*.json
 !results/.gitkeep
+data/excel/*xlsx
+data/excel/*xls
+data/excel/*xlsm
