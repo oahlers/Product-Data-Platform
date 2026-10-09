@@ -204,6 +204,17 @@ fn map_row(
         fallback_brand,
     );
 
+    fn normalize_optional_text(value: String) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "" => String::new(),
+        "false" => String::new(),
+        "n/a" => String::new(),
+        "na" => String::new(),
+        "-" => String::new(),
+        _ => value.trim().to_string(),
+    }
+}
+
     let product_name = first_value(
         row,
         headers,
@@ -239,13 +250,20 @@ fn map_row(
         &["ingredients list", "ingredient statement-en_gb", "inci"],
     );
 
-    let warnings = first_value(
-        row,
-        headers,
-        &["precaution of use", "precautions", "warnings"],
-    );
+    let warnings = normalize_optional_text(
+     first_value(
+            row,
+            headers,
+         &[
+                "precaution of use",
+                "precautions",
+                "warnings",
+            ],
+      )
+);
 
-    let directions = first_value(
+    let directions = normalize_optional_text(
+    first_value(
         row,
         headers,
         &[
@@ -254,7 +272,8 @@ fn map_row(
             "directions",
             "directions for use",
         ],
-    );
+    )
+);
 
     Some(Product {
         sku,
