@@ -9,7 +9,6 @@ mod state;
 mod status_engine;
 mod storage;
 
-use crate::storage::product_source::ProductSource;
 use anyhow::Result;
 use state::AppState;
 use storage::{excel_store::ExcelStore, json_store::JsonStore};
