@@ -53,7 +53,7 @@ The MVP contains deterministic local implementations for:
 - Nordic Label Generator
 - Translation placeholder
 
-Put the final prompt text in `prompts/*.txt`. On Monday, add an `AiClient` implementation for Azure OpenAI and preserve the same `ModuleResult` JSON contracts.
+Put the final prompt text in `prompts/*.txt`. 
 
 ## Azure migration mapping
 
@@ -70,3 +70,4 @@ Secrets                  -> Key Vault + Managed Identity
 ## Important POC limitation
 
 The local rules demonstrate orchestration and data flow, not legal or regulatory correctness. Specialist results remain neutral review signals.
+**AKA: Don't use the code for legal practices**
