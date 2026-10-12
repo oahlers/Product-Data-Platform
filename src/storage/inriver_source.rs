@@ -57,6 +57,43 @@ impl InriverSource {
         Ok(Self { client, config })
     }
 
+    pub async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {
+        let search_term = search_term.trim().to_lowercase();
+
+        if search_term.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let result = self.query_products().await?;
+
+        let mut matches = Vec::new();
+
+        for entity_id in result.entity_ids.into_iter().take(100) {
+            let bundle = self.get_entity_bundle(entity_id).await?;
+
+            let product = map_inriver_entity(&bundle)?;
+
+            let sku_match = product.sku.to_lowercase().contains(&search_term);
+
+            let ean_match = product
+                .upc_code
+                .as_deref()
+                .unwrap_or_default()
+                .to_lowercase()
+                .contains(&search_term);
+
+            let brand_match = product.brand.to_lowercase().contains(&search_term);
+
+            let name_match = product.product_name.to_lowercase().contains(&search_term);
+
+            if sku_match || ean_match || brand_match || name_match {
+                matches.push(product);
+            }
+        }
+
+        Ok(matches)
+    }
+
     pub async fn query_products(&self) -> Result<QueryResponse> {
         self.query_entities("Product", None).await
     }
@@ -1030,5 +1067,26 @@ mod integration_tests {
         assert!(product.is_some());
 
         println!("{}", serde_json::to_string_pretty(&product).unwrap());
+    }
+
+    #[tokio::test]
+    #[ignore = "requires live Inriver credentials"]
+    async fn searches_products() {
+        dotenvy::dotenv().ok();
+
+        let config = InriverConfig::from_env().expect("Missing config");
+
+        let source = InriverSource::new(config).expect("Source");
+
+        let products = source
+            .search_products("chrome")
+            .await
+            .expect("Search failed");
+
+        println!("Found {} products", products.len());
+
+        assert!(!products.is_empty());
+
+        println!("{}", serde_json::to_string_pretty(&products).unwrap());
     }
 }
