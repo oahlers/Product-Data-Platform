@@ -255,6 +255,41 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
         field_string(&fields, "Brand"),
     ]);
 
+    let width_mm = parse_cm_as_mm_field(&fields, "ItemWidth");
+
+    let height_mm = parse_cm_as_mm_field(&fields, "ItemHeight");
+
+    let depth_mm = parse_cm_as_mm_field(&fields, "ItemLength");
+
+    let primary_volume_mm3 = calculate_volume(width_mm, depth_mm, height_mm);
+
+    let paper_cardboard_g = parse_f64_field(&fields, "ItemPaper");
+
+    let glass_g = parse_f64_field(&fields, "ItemPackagingGlass");
+
+    let plastic_g = parse_f64_field(&fields, "ItemPackagingPlastic");
+
+    let aluminium_g = parse_f64_field(&fields, "ItemPackagingAluminium");
+
+    let tinplate_g = parse_f64_field(&fields, "ItemPackagingMetal");
+
+    let upc_code = {
+    let ean = field_string(&fields, "ItemEAN");
+
+    if !ean.is_empty() {
+        Some(ean)
+    } else {
+        linked_item_summary
+            .as_ref()
+            .and_then(|item_summary| {
+                non_empty_string(
+                    item_summary,
+                    "displayDescription",
+                )
+            })
+    }
+};
+
     let modified_at = parse_modified_at(summary).unwrap_or_else(Utc::now);
 
     Ok(Product {
@@ -268,10 +303,10 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
         warnings,
         directions,
 
-        width_mm: None,
-        depth_mm: None,
-        height_mm: None,
-        primary_volume_mm3: None,
+        width_mm,
+        depth_mm,
+        height_mm,
+        primary_volume_mm3,
 
         secondary_width_mm: None,
         secondary_depth_mm: None,
@@ -307,15 +342,121 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
         interspace_percent: None,
 
         packaging_material_layers: None,
-        paper_cardboard_g: None,
-        glass_g: None,
+
+        paper_cardboard_g,
+        glass_g,
         textiles_wood_g: None,
-        tinplate_g: None,
-        aluminium_g: None,
-        plastic_g: None,
+        tinplate_g,
+        aluminium_g,
+        plastic_g,
 
         modified_at,
     })
+}
+
+pub fn dump_fields(value: &Value) {
+    match value {
+        Value::Object(object) => {
+            if object.contains_key("fieldTypeId") {
+                let field_type_id = object
+                    .get("fieldTypeId")
+                    .and_then(Value::as_str)
+                    .unwrap_or("");
+
+                let display_name = object
+                    .get("fieldTypeDisplayName")
+                    .and_then(Value::as_str)
+                    .unwrap_or("");
+
+                let field_data_type = object
+                    .get("fieldDataType")
+                    .and_then(Value::as_str)
+                    .unwrap_or("");
+
+                let value = object.get("value").unwrap_or(&Value::Null);
+
+                println!(
+                    "{} | {} | {} | {}",
+                    field_type_id,
+                    display_name,
+                    field_data_type,
+                    compact_json(value)
+                );
+            }
+
+            for child in object.values() {
+                dump_fields(child);
+            }
+        }
+
+        Value::Array(values) => {
+            for child in values {
+                dump_fields(child);
+            }
+        }
+
+        _ => {}
+    }
+}
+
+pub fn field_dump_lines(value: &Value) -> Vec<String> {
+    let mut lines = Vec::new();
+
+    collect_field_dump_lines(value, &mut lines);
+
+    lines.sort();
+    lines.dedup();
+
+    lines
+}
+
+fn collect_field_dump_lines(value: &Value, output: &mut Vec<String>) {
+    match value {
+        Value::Object(object) => {
+            if object.contains_key("fieldTypeId") {
+                let field_type_id = object
+                    .get("fieldTypeId")
+                    .and_then(Value::as_str)
+                    .unwrap_or("");
+
+                let display_name = object
+                    .get("fieldTypeDisplayName")
+                    .and_then(Value::as_str)
+                    .unwrap_or("");
+
+                let field_data_type = object
+                    .get("fieldDataType")
+                    .and_then(Value::as_str)
+                    .unwrap_or("");
+
+                let field_value = object.get("value").unwrap_or(&Value::Null);
+
+                output.push(format!(
+                    "{} | {} | {} | {}",
+                    field_type_id,
+                    display_name,
+                    field_data_type,
+                    compact_json(field_value)
+                ));
+            }
+
+            for child in object.values() {
+                collect_field_dump_lines(child, output);
+            }
+        }
+
+        Value::Array(values) => {
+            for child in values {
+                collect_field_dump_lines(child, output);
+            }
+        }
+
+        _ => {}
+    }
+}
+
+fn compact_json(value: &Value) -> String {
+    serde_json::to_string(value).unwrap_or_else(|_| "null".to_string())
 }
 
 fn build_headers(config: &InriverConfig) -> Result<HeaderMap> {
@@ -486,6 +627,31 @@ fn first_non_empty(values: &[String]) -> String {
         .unwrap_or_default()
 }
 
+fn parse_f64_field(fields: &[&Value], field_type_id: &str) -> Option<f64> {
+    let value = field_string(fields, field_type_id);
+
+    if value.trim().is_empty() {
+        return None;
+    }
+
+    value.replace(',', ".").parse::<f64>().ok()
+}
+
+fn parse_cm_as_mm_field(fields: &[&Value], field_type_id: &str) -> Option<f64> {
+    parse_f64_field(fields, field_type_id).map(|v| v * 10.0)
+}
+
+fn calculate_volume(
+    width_mm: Option<f64>,
+    depth_mm: Option<f64>,
+    height_mm: Option<f64>,
+) -> Option<f64> {
+    match (width_mm, depth_mm, height_mm) {
+        (Some(w), Some(d), Some(h)) => Some(w * d * h),
+        _ => None,
+    }
+}
+
 fn parse_modified_at(summary: &Value) -> Option<DateTime<Utc>> {
     let value = summary.get("modifiedDate").and_then(Value::as_str)?;
 
@@ -526,44 +692,100 @@ mod tests {
                 "modifiedDate": "2026-08-21T08:00:00.0000000Z"
             },
             "linkedEntities": [
-                {
-                    "summary": {
-                        "displayDescription": "3614273962384",
-                        "displayName": "Chrome United eau de toilette 100 ml",
-                        "entityTypeId": "Item"
-                    },
-                    "fields": [
-                        {
-                            "fieldTypeId": "ItemWebname",
-                            "value": "Chrome United eau de toilette 100 ml"
-                        },
-                        {
-                            "fieldTypeId": "ItemInci",
-                            "value": "ALCOHOL, PARFUM, AQUA"
-                        },
-                        {
-                            "fieldTypeId": "ItemBodyTx",
-                            "value": {
-                                "da": "",
-                                "en": "English product description",
-                                "fi": "",
-                                "no": "",
-                                "sv": ""
-                            }
-                        },
-                        {
-                            "fieldTypeId": "ItemHowToTx",
-                            "value": {
-                                "da": "",
-                                "en": "Apply as directed",
-                                "fi": "",
-                                "no": "",
-                                "sv": ""
-                            }
-                        }
-                    ]
+    {
+        "summary": {
+            "displayDescription": "3614273962384",
+            "displayName": "Chrome United eau de toilette 100 ml",
+            "entityTypeId": "Item"
+        },
+        "fields": [
+            {
+                "fieldTypeId": "ItemEAN",
+                "fieldTypeDisplayName": "EAN",
+                "fieldDataType": "String",
+                "value": "3614273962384"
+            },
+            {
+                "fieldTypeId": "ItemWebname",
+                "fieldTypeDisplayName": "Webname",
+                "fieldDataType": "String",
+                "value": "Chrome United eau de toilette 100 ml"
+            },
+            {
+                "fieldTypeId": "ItemInci",
+                "fieldTypeDisplayName": "INCI",
+                "fieldDataType": "String",
+                "value": "ALCOHOL, PARFUM, AQUA"
+            },
+            {
+                "fieldTypeId": "ItemWidth",
+                "fieldTypeDisplayName": "Width",
+                "fieldDataType": "String",
+                "value": "9.4"
+            },
+            {
+                "fieldTypeId": "ItemLength",
+                "fieldTypeDisplayName": "Length",
+                "fieldDataType": "String",
+                "value": "3.9"
+            },
+            {
+                "fieldTypeId": "ItemHeight",
+                "fieldTypeDisplayName": "Height",
+                "fieldDataType": "String",
+                "value": "12.1"
+            },
+            {
+                "fieldTypeId": "ItemPaper",
+                "fieldTypeDisplayName": "Paper packaging",
+                "fieldDataType": "String",
+                "value": "21.13"
+            },
+            {
+                "fieldTypeId": "ItemPackagingGlass",
+                "fieldTypeDisplayName": "Glass packaging",
+                "fieldDataType": "String",
+                "value": "181.1"
+            },
+            {
+                "fieldTypeId": "ItemPackagingPlastic",
+                "fieldTypeDisplayName": "Plastic packaging",
+                "fieldDataType": "String",
+                "value": "17.99"
+            },
+            {
+                "fieldTypeId": "ItemPackagingMetal",
+                "fieldTypeDisplayName": "Metal packaging",
+                "fieldDataType": "String",
+                "value": "2.21"
+            },
+            {
+                "fieldTypeId": "ItemBodyTx",
+                "fieldTypeDisplayName": "Body",
+                "fieldDataType": "LocaleString",
+                "value": {
+                    "da": "",
+                    "en": "English product description",
+                    "fi": "",
+                    "no": "",
+                    "sv": ""
                 }
-            ]
+            },
+            {
+                "fieldTypeId": "ItemHowToTx",
+                "fieldTypeDisplayName": "How to",
+                "fieldDataType": "LocaleString",
+                "value": {
+                    "da": "",
+                    "en": "Apply as directed",
+                    "fi": "",
+                    "no": "",
+                    "sv": ""
+                }
+            }
+        ]
+    }
+]
         });
 
         let product = map_inriver_entity(&bundle).expect("Bundle should map to Product");
@@ -579,11 +801,59 @@ mod tests {
         assert_eq!(product.inci, "ALCOHOL, PARFUM, AQUA");
 
         assert_eq!(product.directions, "Apply as directed");
+
+        assert_eq!(product.width_mm, Some(94.0));
+assert_eq!(product.depth_mm, Some(39.0));
+assert_eq!(product.height_mm, Some(121.0));
+
+assert_eq!(
+    product.paper_cardboard_g,
+    Some(21.13)
+);
+
+assert_eq!(
+    product.glass_g,
+    Some(181.1)
+);
+
+assert_eq!(
+    product.plastic_g,
+    Some(17.99)
+);
+
+assert_eq!(
+    product.tinplate_g,
+    Some(2.21)
+);
+    }
+
+    #[test]
+    fn creates_field_dump_lines() {
+        let bundle = serde_json::json!({
+            "fields": [
+                {
+                    "fieldTypeId": "ItemInci",
+                    "fieldTypeDisplayName": "INCI",
+                    "fieldDataType": "String",
+                    "value": "ALCOHOL, AQUA"
+                }
+            ]
+        });
+
+        let lines = field_dump_lines(&bundle);
+
+        assert_eq!(lines.len(), 1);
+
+        assert!(lines[0].contains("ItemInci"));
+
+        assert!(lines[0].contains("ALCOHOL"));
     }
 }
 
 #[cfg(test)]
 mod integration_tests {
+    use std::fs;
+
     use super::*;
 
     #[tokio::test]
@@ -612,16 +882,28 @@ mod integration_tests {
             .await
             .expect("Bundle request failed");
 
+        let field_lines = field_dump_lines(&bundle);
+
+        let field_dump = if field_lines.is_empty() {
+            String::new()
+        } else {
+            format!("{}\n", field_lines.join("\n"))
+        };
+
+        fs::write("inriver_field_dump.txt", field_dump).expect("Field dump should be written");
+
         println!(
-            "{}",
-            serde_json::to_string_pretty(&bundle).expect("Bundle should serialize")
+            "Wrote {} field definitions to inriver_field_dump.txt",
+            field_lines.len()
         );
+
+        dump_fields(&bundle);
 
         let product = map_inriver_entity(&bundle).expect("Bundle should map to Product");
 
         println!(
             "Mapped product:\n{}",
-            serde_json::to_string_pretty(&product).expect("Product should serialize")
+            serde_json::to_string_pretty(&product,).expect("Product should serialize",)
         );
     }
 }

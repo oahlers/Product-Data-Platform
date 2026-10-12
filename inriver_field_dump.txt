@@ -1,0 +1,259 @@
+CPNP | CPNP | CVL | null
+CPNPNumber | CPNP Number | String | ""
+HexRelevant | Hex code relevant (item) | CVL | "No"
+InciRelevant | INCI relevant (item) | CVL | "Yes"
+ItemAlcohol | Alcohol | CVL | "Yes"
+ItemAlcoholPercent | Alcohol % | String | "72.37"
+ItemAlcoholPercent | Alcohol % | String | "73.07"
+ItemArchive | Archive item | Boolean | false
+ItemBaseColor | Base Color | String | ""
+ItemBaseNotes | Base Notes (Item) | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ItemBaseNotes | Base Notes (Item) | LocaleString | {"da":"","en":"Sandalwood, Tonka Bean, Musk, Oak Moss, Cedar, Cardamom, Brazilian Rosewood","fi":"","no":"","sv":""}
+ItemBodyTx | Body (Item) | LocaleString | {"da":"","en":"Azzaro Chrome celebrates the joie de vivre, authentic feelings, and pays tribute to the unwavering bond between father and son. A fragrance that encapsulates the sense of getting away from it all, with its invigorating, soothing and sleek freshness: a smooth, sophisticated freshness (citrus, white musk notes) combined with the green and aquatic notes of adventure and the comfort of a woody tea accord (sandalwood, amber, maté).\n\nAzzaro Chrome for men belongs to the fragrance family: Citrus, Aquatic, Woody.\n\nAn Eau de Toilette composed of three notes: \n- At its dawn: Bergamot*\n- At its zenith: Transparent Musk\n- At its dusk: Maté Leaves\n\n*Raw materials derived from sustainable development practices.\n\nAzzaro Parfums is dedicated to working with its partners towards responsible development, leading to sustainable luxury. Selected with its partner Robertet, the Italian bergamot comes from responsible sources, guaranteeing a fair income for producers and communities while preserving their environment.","fi":"","no":"","sv":""}
+ItemBodyTx | Body (Item) | LocaleString | {"da":"","en":"Chrome United perfectly encapsulates the incredible memories of the endless sunny days spent with your loved ones. Just as if you were on the sea coast, inhale what feels like a breath of fresh air. Within its transparent bottle is captured a juice as blue as the Provence's sky. The aromatic fragrance of Chrome United is contrasted : the salty sea sprays combined with the masculine wood notes will take you on a journey. The fresh Bergamot and Lavandin notes will transport you to the Mediterranean landscapes. The Vetiver brings a warmth to the fragrance, reflecting the peaceful summer afternoons.","fi":"","no":"","sv":""}
+ItemBodyTx | Body (Item) | LocaleString | {"da":"OPDAG CHROME EAU DE TOILETTE FRA AZZARO\nSlip essensen af karisma og sofistikering løs med Chrome Eau de Toilette fra Azzaro—en tidløs duft designet til den moderne mand. Inspireret af det azurblå Middelhav tager denne fængslende duft dig med på en rejse gennem forfriskende citrus, aromatiske urter og varme, maskuline undertoner. Hvis du leder efter en duft, der både udstråler friskhed og dybde, så er Chrome svaret.\n\nEN DUFT, DER TALER TIL DIN SJÆL\nForestil dig at starte din dag omgivet af en opfriskende duft, der løfter dit humør og styrker din selvtillid. Chromes unikke blanding af citrus- og aromatiske noter giver en energisk start. Toppnoterne af rosmarin, ananas, neroli, bergamot og citron skaber et øjeblikkeligt indtryk, der vækker dine sanser og sætter en livlig tone for dagen, der kommer.\n\nOMARM DINE FORBUND\nNår du bevæger dig gennem din dag, tilbyder Chrome mere end blot en behagelig aroma; det fremmer forbindelser og relationer. Hjertenoterne af cyklamen, koriander, jasmin og ekløv giver duften en dybde, der introducerer en subtil kompleksitet, som resonerer hos dem omkring dig. Denne duft fejrer de bånd, vi deler—særligt den varige forbindelse mellem far og søn.\n\nET VARIGT INDTRYK\nNår dagen skrider frem, efterlader Chrome et spor af varme og maskulinitet. Basenoterne af sandeltræ, tonkabønne, muskus, ekløv, ceder, kardemomme og brasiliansk rosentræ skaber et rigt, varigt fundament, der forbliver hos dig. Denne langvarige duft sikrer, at uanset om du er i et bestyrelsesmøde eller nyder en aften ude, så forbliver du mindeværdig og indflydelsesrig.\n\nET TIDLØST VALG TIL ENHVER ANLEDNING\nUanset om du søger en ny signaturduft eller en gave til nogen særlig, skiller Chrome Eau de Toilette sig ud som en luksusparfume, der udstråler elegance og sofistikering. Det er ikke blot en duft; det er en måde at udtrykke din identitet på og et værktøj til at skabe varige indtryk.\n\nDUFTNOTER\nTopnoter: rosmarin, ananas, neroli, bergamot, citron\nHjertenoter: cyklamen, koriander, jasmin, ekløv\nBasenoter: sandeltræ, tonkabønne, muskus, ekløv, ceder, kardemomme, brasiliansk rosentræ\n\nHVORFOR VÆLGE CHROME EAU DE TOILETTE?\nVælg Chrome, hvis du leder efter en parfym herr, der balancerer friskhed med dybde. Denne Eau de Toilette er et ideelt valg for mænd, der værdsætter en luksusparfume, der appellerer til deres eventyrlystne ånd, samtidig med at den sikrer en langvarig duft. Forbedr din duftsamling med Chrome og oplev tiltrækningen af en virkelig fængslende duft.\n\nVed at vælge Azzaro Chrome investerer du ikke blot i en duft, men også i de øjeblikke og minder, der følger med. Omfavn charmen ved Chrome og lad dens opfriskende essens omdefinere dine daglige oplevelser.","en":"Discover Chrome Eau de Toilette by Azzaro\nUnleash the essence of charisma and sophistication with Chrome Eau de Toilette by Azzaro—a timeless fragrance designed for the modern man. Inspired by the azure blue of the Mediterranean Sea, this captivating scent takes you on a journey through refreshing citrus, aromatic herbs, and warm, masculine undertones. If you're searching for a fragrance that embodies both freshness and depth, Chrome is your answer.\n\nA Fragrance That Speaks to Your Spirit\nImagine starting your day enveloped in an invigorating scent that lifts your mood and enhances your confidence. Chrome's unique blend of citrus and aromatic notes provides an energetic start. The top notes of rosemary, pineapple, neroli, bergamot, and lemon create an immediate impression, awakening your senses and setting a vibrant tone for the day ahead.\n\nEmbrace Your Connections\nAs you move through your day, Chrome offers more than just a pleasant aroma; it fosters connections and relationships. The heart notes of cyclamen, coriander, jasmine, and oak moss deepen the fragrance, introducing a subtle complexity that resonates with those around you. This scent celebrates the bonds we share—especially the enduring connection between father and son.\n\nA Lasting Impression\nAs the day unfolds, Chrome leaves a trail of warmth and masculinity. The base notes of sandalwood, tonka bean, musk, oak moss, cedar, cardamom, and Brazilian rosewood create a rich, lasting foundation that stays with you. This long-lasting fragrance ensures that whether you’re in a boardroom meeting or enjoying a night out, you remain memorable and impactful.\n\nA Timeless Choice for Every Occasion\nWhether you’re seeking a new signature scent or a gift for someone special, Chrome Eau de Toilette stands out as a luxury perfume that embodies elegance and sophistication. It’s not just a fragrance; it's an expression of your identity and a tool to make lasting impressions.\n\nFragrance Notes\nTop Notes: Rosemary, Pineapple, Neroli, Bergamot, Lemon\nHeart Notes: Cyclamen, Coriander, Jasmine, Oak Moss\nBase Notes: Sandalwood, Tonka Bean, Musk, Oak Moss, Cedar, Cardamom, Brazilian Rosewood\n\nWhy Choose Chrome Eau de Toilette?\nOpt for Chrome if you’re looking for a parfym herr that balances freshness with depth. This Eau de Toilette is an ideal choice for men who appreciate a lyxparfym that speaks to their adventurous spirit while ensuring a långvarig doft. Elevate your fragrance collection with Chrome and experience the allure of a truly captivating scent.\n\nBy choosing Azzaro Chrome, you not only invest in a fragrance but also in the moments and memories that come with it. Embrace the charm of Chrome and let its invigorating essence redefine your everyday experiences.","fi":"LÖYDÄ CHROME EAU DE TOILETTE AZZAROLTA\nVapauta karismaa ja hienostuneisuutta Azzaron Chrome Eau de Toilette -tuoksun avulla—ajaton tuoksu, joka on suunniteltu modernille miehelle. Välimeren taivaan sinisestä inspiroituneena tämä lumoava tuoksu vie sinut matkalle virkistävien sitrushedelmien, aromaattisten yrttien ja lämpimien, maskuliinisten sävyjen läpi. Jos etsit tuoksua, joka yhdistää raikkauden ja syvyyden, Chrome on vastaus.\n\nTUOKSU, JOKA PUHUU HENGELLESI\nKuvittele aloittavasi päiväsi virkistävässä tuoksussa, joka kohottaa mielialaasi ja lisää itseluottamustasi. Chromen ainutlaatuinen sitrus- ja aromaattisten nuottien yhdistelmä tarjoaa energisen alun. Ylinuoteissa on rosmariinia, ananasta, nerolia, bergamottia ja sitruunaa, jotka luovat välittömän vaikutelman, herättäen aistisi ja asettaen elävän sävyn tulevalle päivälle.\n\nHYVÄKSY YHTEYTESI\nKun kuljet päiväsi läpi, Chrome tarjoaa enemmän kuin vain miellyttävän aromin; se edistää suhteita ja yhteyksiä. Sydännuotit syklameenia, korianteria, jasmiinia ja tammimossia syventävät tuoksua, tuoden esiin hienovaraista monimutkaisuutta, joka resonoi ympärilläsi olevien kanssa. Tämä tuoksu juhlii jakamiamme siteitä—erityisesti isän ja pojan kestävää yhteyttä.\n\nKESTÄVÄ VAIKUTELMA\nKun päivä etenee, Chrome jättää lämpimän ja maskuliinisen jäljen. Pohjanuotit santelipuuta, tonkabönää, muskusia, tammimossia, setriä, kardemummaa ja Brasilian ruusupuuta luovat rikkaan ja kestävän perustan, joka jää mukanasi. Tämä pitkäkestoinen tuoksu varmistaa, että olitpa sitten kokouksessa tai nauttimassa illasta, pysyt unohtumattomana ja vaikuttavana.\n\nAJATON VALINTA KAIKILLE TILANTEILLE\nEtsitpä uutta allekirjoitusaromia tai lahjaa erityiselle henkilölle, Chrome Eau de Toilette erottuu luksustuoksuna, joka ilmentää eleganssia ja hienostuneisuutta. Se ei ole vain tuoksu; se on ilmaisusi identiteetistäsi ja työkalu, joka luo kestäviä vaikutelmia.\n\nTUOKSUN NUOTIT\nYlinuotit: rosmariini, ananas, neroli, bergamotti, sitruuna\nSydännuotit: syklameeni, korianteri, jasmiini, tammimossi\nPohjanuotit: santelipuu, tonkaböna, muskusi, tammimossi, setri, kardemumma, Brasilian ruusupuu\n\nMIKSI VALITA CHROME EAU DE TOILETTE?\nValitse Chrome, jos etsit parfym herr, joka yhdistää raikkauden ja syvyyden. Tämä Eau de Toilette on ihanteellinen valinta miehille, jotka arvostavat lyxparfym, joka puhuu seikkailunhaluiselle hengellesi samalla kun se varmistaa långvarig doft. Kohota tuoksukokoelmaasi Chromella ja koe todella kiehtovan tuoksun viehätys.\n\nValitsemalla Azzaro Chrome et vain sijoita tuoksuun, vaan myös hetkiin ja muistoihin, jotka siihen liittyvät. Omaksu Chromen viehätys ja anna sen virkistävän olemuksen määritellä jokapäiväiset kokemuksesi.","no":"OPDAG CHROME EAU DE TOILETTE FRA AZZARO\nSlip essensen af karisma og sofistikering løs med Chrome Eau de Toilette fra Azzaro—en tidløs duft designet til den moderne mand. Inspireret af det azurblå hav i Middelhavet tager denne fængslende duft dig med på en rejse gennem forfriskende citrus, aromatiske urter og varme, maskuline undertoner. Hvis du leder efter en duft, der både udstråler friskhed og dybde, så er Chrome svaret.\n\nEN DUFT, DER TALER TIL DIN SJÆL\nForestil dig at starte din dag omgivet af en opfriskende duft, der løfter dit humør og styrker din selvtillid. Chromes unikke blanding af citrus- og aromatiske noter giver en energisk start. Toppnoterne af rosmarin, ananas, neroli, bergamot og citron skaber et øjeblikkeligt indtryk, der vækker dine sanser og sætter en livlig tone for dagen, der kommer.\n\nOMARM DINE FORBUND\nNår du bevæger dig gennem din dag, tilbyder Chrome mere end blot en behagelig aroma; det fremmer forbindelser og relationer. Hjertenoterne af cyklamen, koriander, jasmin og ekløv giver duften en dybde, der introducerer en subtil kompleksitet, som resonerer hos dem omkring dig. Denne duft fejrer de bånd, vi deler—især den varige forbindelse mellem far og søn.\n\nET VARIGT INDTRYK\nNår dagen skrider frem, efterlader Chrome et spor af varme og maskulinitet. Basenoterne af sandeltræ, tonkabønne, muskus, ekløv, ceder, kardemomme og brasiliansk rosentræ skaber et rigt, varigt fundament, der forbliver hos dig. Denne langvarige duft sikrer, at uanset om du er i et bestyrelsesmøde eller nyder en aften ude, så forbliver du mindeværdig og indflydelsesrig.\n\nET TIDLØST VALG TIL ENHVER ANLEDNING\nUanset om du søger en ny signaturduft eller en gave til nogen særlig, skiller Chrome Eau de Toilette sig ud som en luksusparfume, der udstråler elegance og sofistikering. Det er en måde at udtrykke din identitet på og et værktøj til at skabe varige indtryk.\n\nDUFTNOTER\nTopnoter: Rosmarin, Ananas, Neroli, Bergamot, Citron\nHjertenoter: Cyklamen, Koriander, Jasmin, Ekløv\nBasenoter: Sandeltræ, Tonkabønne, Muskus, Ekløv, Ceder, Kardemomme, Brasiliansk Rosentræ\n\nHVORFOR VÆLGE CHROME EAU DE TOILETTE?\nVælg Chrome, hvis du leder efter en parfym herr, der balancerer friskhed med dybde. Denne Eau de Toilette er et ideelt valg for mænd, der værdsætter en lyxparfym, der appellerer til deres eventyrlystne ånd, samtidig med at den sikrer en långvarig doft. Forbedr din duftsamling med Chrome og oplev tiltrækningen af en virkelig fængslende duft.\n\nVed at vælge Azzaro Chrome investerer du ikke blot i en duft, men også i de øjeblikke og minder, der følger med. Omfavn charmen ved Chrome og lad dens opfriskende essens omdefinere dine daglige oplevelser.","sv":"UTFORSKA CHROME EAU DE TOILETTE FRA AZZARO\nParfym herr - Släpp lös essensen av karisma och sofistikering med Chrome Eau de Toilette från Azzaro—en herrparfym som firar livets glädje och sanna känslor, och hyllar det speciella bandet som förenar far och son. Inspirerad av det azurblå Medelhavet tar denna fängslande doft dig med på en resa genom uppfriskande citrus, aromatiska örter och varma, maskulina undertoner av vit mysk. Om du söker en doft som utstrålar både fräschör och djup, är Chrome svaret.\n\nEN HERR PARFYM SOM TALAR TILL DIN ANDA\nFöreställ dig att börja din dag inbäddad i en uppfriskande doft som lyfter ditt humör och ökar din självkänsla. Chromes unika blandning av citrus- och aromatiska noter ger en energigivande start. Toppnoterna av rosmarin, ananas, neroli, bergamott och citron skapar ett omedelbart intryck som väcker dina sinnen och sätter en livlig ton för dagen som kommer.\n\nOMFARMA DIG AV KOMPLEXA DOFTNOTER\nNär du rör dig genom din dag erbjuder Chrome mer än bara en behaglig arom; den främjar kopplingar och relationer. Hjärtnoterna av cyklamen, koriander, jasmin och ekmossa fördjupar doften och introducerar en subtil komplexitet som resonerar hos dem omkring dig. Denna doft firar de band vi delar—särskilt den bestående kopplingen mellan far och son.\n\nETT VARANDE INTRYCK MED AZZARO CHROME\nNär dagen fortskrider lämnar Chrome ett spår av värme och maskulinitet. Basnoterna av sandelträ, tonkaböna, mysk, ekmossa, ceder, kardemumma och brasiliansk rosenträ skapar en rik, varaktig grund som stannar kvar hos dig. Denna långvariga doft säkerställer att oavsett om du är i ett styrelsemöte eller njuter av en utekväll, förblir du minnesvärd och inflytelserik.\n\nETT TIDLÖST VAL: EN FRÄSCH PARFYM\nOavsett om du letar efter en ny signaturdoft eller en present till någon speciell, står Chrome Eau de Toilette ut som en lyxparfym som utstrålar elegans och sofistikering. Gör det inte bara till en doft; det är ett uttryck för din identitet och ett verktyg för att skapa ett intryck att minnas.\n\nDOFTNOTER\nToppnoter: rosmarin, ananas, neroli, bergamott, citron\nHjärtnoter: cyklamen, koriander, jasmin, ekmossa\nBasnoter: sandelträ, tonkaböna, vit mysk, ekmossa, ceder, kardemumma, brasiliansk rosenträ\n\nVARFÖR VÄLJA CHROME EDT?\nVälj Chrome om du letar efter en herrparfym som balanserar fräschör med djup. Denna Eau de Toilette är ett perfekt val för män som uppskattar en lyxparfym som tilltalar deras äventyrslust samtidigt som den säkerställer en långvarig doft. Höj din doftkollektion med Chrome och upplev lockelsen av en verkligt fängslande doft.\n\nGenom att välja Azzaro Chrome investerar du inte bara i en doft utan också i de stunder och minnen som följer med den. Omfamna charmen hos Chrome och låt dess uppfriskande essens omdefiniera dina vardagliga upplevelser."}
+ItemBoxCardboardPack | BOX Cardboard packaging (Item) | String | ""
+ItemBoxPaperPack | BOX Paper packaging (Item) | String | ""
+ItemBoxPlasticPack | BOX Plastic packaging (Item) | String | ""
+ItemBoxWoodPack | BOX Wood packaging (Item) | String | ""
+ItemBrand | Brand | String | "AZZARO"
+ItemCITESAppendix | CITES Appendix  (Item) | CVL | null
+ItemCertifications | Certifications (Item) | CVL | null
+ItemColCardboardPack | COL Cardboard packaging (Item) | String | ""
+ItemColPaperPack | COL Paper packaging (Item) | String | ""
+ItemColPlasticPack | COL Plastic packaging (Item) | String | ""
+ItemColWoodPack | COL Wood packaging (Item) | String | ""
+ItemColor | Color | CVL | null
+ItemColor2 | Color (Makeup / Non Sellable) | CVL | null
+ItemColorDescription | Color description | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ItemColorIntensityMakeupCoverage | Color Intensity Makeup Coverage | CVL | null
+ItemContainsCITESIngredient | Contains CITES Ingredient (Item) | CVL | null
+ItemContent | Content (Item) | CVL | null
+ItemDangerClass | Danger Class | CVL | "D3"
+ItemDangerGoods | Dangerous Goods | CVL | "Yes"
+ItemDescriptionCode | Description of specimen: Three letter code (Item) | String | ""
+ItemDescriptionCommon | Description of specimen: Common name (Item) | String | ""
+ItemDescriptionLatin | Description of specimen: Latin name (Item) | String | ""
+ItemEAN | EAN | String | "3351500020362"
+ItemEAN | EAN | String | "3351500020386"
+ItemEAN | EAN | String | "3351500020409"
+ItemEAN | EAN | String | "3351500020423"
+ItemEAN | EAN | String | "3614273962384"
+ItemEAdd | Electronic mail address (Item) | String | "kontakt@loreal.com; neuvonta@loreal.com"
+ItemEMSA | EMSA | CVL | "E66"
+ItemERPTimestamp | ERP Timestamp | DateTime | "2026-04-14T14:00:35.0000000"
+ItemERPTimestamp | ERP Timestamp | DateTime | "2026-06-24T11:00:28.0000000"
+ItemERPTimestamp | ERP Timestamp | DateTime | "2026-07-09T14:06:41.0000000"
+ItemERPTimestamp | ERP Timestamp | DateTime | "2026-07-09T14:06:44.0000000"
+ItemERPTimestamp | ERP Timestamp | DateTime | "2026-08-21T08:00:27.0000000"
+ItemEUManufa | EU Manufacturer (Item) | CVL | "Yes"
+ItemEditionNumber | Edition Number | String | ""
+ItemEditionNumber | Edition Number | String | "NY"
+ItemExpirationDate | Expiration Date (Item) | CVL | null
+ItemExpirationDatePrint | Expiration Date Printed (Item) | CVL | null
+ItemFirstOpening | Period after opening (Item) | CVL | null
+ItemFlashPoint | Flash point | String | "13"
+ItemFragranceFamily | Fragrance Family (Item) | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ItemFragranceFamily | Fragrance Family (Item) | LocaleString | {"da":"","en":"Aromatic","fi":"","no":"","sv":""}
+ItemFragranceSize | Fragrance Size | CVL | null
+ItemGLN | GLN Number (Item) | String | ""
+ItemGender | Gender (Item) | CVL | "Man"
+ItemHairColorGroupName | Hair Color Group Name | CVL | null
+ItemHeartNotes | Heart Notes (Items) | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ItemHeartNotes | Heart Notes (Items) | LocaleString | {"da":"","en":"Cyclamen, Coriander, Jasmine, Oak Moss","fi":"","no":"","sv":""}
+ItemHeight | Height | String | "10.4"
+ItemHeight | Height | String | "12"
+ItemHeight | Height | String | "12.1"
+ItemHeight | Height | String | "9.4"
+ItemHex | Hex | String | ""
+ItemHowToTx | How to (Item) | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ItemHowToTx | How to (Item) | LocaleString | {"da":"Sprayes let på huden, efter behov, gerne der hvo r man pulserer (fx. håndled, hals, albueled og knæhaser) PRO DUKTSPECIFIKATIONER: En Eau de Toilette kan bruges dagligt I ndeholder 8-12% duftkoncentrater Giver et diskret duftspor T IP: Duften forstærkes og forlænges, når man bruger et eller flere produkter i samme serie fx en deodorant spray som spra yes generøst på kroppen eller en deodorant stick som påføres  armhulen, inden Eau de Toilette sprayes på kroppen.","en":"Spray lightly onto the skin, for desired effect , preferably at pulses (eg wrist, neck, elbow joint and knee  braces). PRODUCT SPECIFICATIONS: An Eau de Toilette can be used daily Contains 8-12% scent concentration Provides a dis creet scent trail TIP: The scent is enhanced and extended wh en using one or more products in the same series, eg a deodo rant spray that is generously sprayed on the body or a deodo rant stick applied to the armpit before spraying Eau de Toil ette on the body.","fi":"","no":"Spray lett på huden for ønsket effekt og konsentrasjon, fortrinnsvis på pulspunkter (som for eksempel håndledd, nakke, albue eller bak knærne). PRODUKTSPESIFIKASJON: En Eau de Toilette kan brukes daglig. Inneholder 8-12% duftkonsentrasjon. Etterlater et diskret duftspor. TIPS: Duften får en bredere base dersom flere produkter i samme serie benyttes lagvis på huden, slik som for eksempel deodorant spray som påføres generøst på kroppen eller en deodorant stick som påføres under armene før Eau de Toilette sprayes som anvist.","sv":""}
+ItemHowToTx | How to (Item) | LocaleString | {"da":"Sprayes let på huden, efter behov, gerne der hvor man pulserer (fx. håndled, hals, albueled og knæhaser) PRO DUKTSPECIFIKATIONER: En Eau de Toilette kan bruges dagligt I ndeholder 8-12% duftkoncentrater Giver et diskret duftspor T IP: Duften forstærkes og forlænges, når man bruger et eller flere produkter i samme serie fx en deodorant spray som spra yes generøst på kroppen eller en deodorant stick som påføres  armhulen, inden Eau de Toilette sprayes på kroppen.","en":"Spray lightly onto the skin, for desired effect , preferably at pulses (eg wrist, neck, elbow joint and knee  braces). PRODUCT SPECIFICATIONS: An Eau de Toilette can be used daily Contains 8-12% scent concentration Provides a dis creet scent trail TIP: The scent is enhanced and extended wh en using one or more products in the same series, eg a deodo rant spray that is generously sprayed on the body or a deodo rant stick applied to the armpit before spraying Eau de Toil ette on the body.","fi":"","no":"Spray lett på huden for ønsket effekt og konsentrasjon, fortrinnsvis på pulspunkter (som for eksempel håndledd, nakke, albue eller bak knærne). PRODUKTSPESIFIKASJON: En Eau de Toilette kan brukes daglig. Inneholder 8-12% duftkonsentrasjon. Etterlater et diskret duftspor. TIPS: Duften får en bredere base dersom flere produkter i samme serie benyttes lagvis på huden, slik som for eksempel deodorant spray som påføres generøst på kroppen eller en deodorant stick som påføres under armene før Eau de Toilette sprayes som anvist.","sv":""}
+ItemInci | INCI | String | "ALCOHOL, PARFUM / FRAGRANCE, AQUA / WATER / EAU, DIPROPYLENE GLYCOL, LINALOOL, LIMONENE, BUTYL METHOXYDIBENZOYLMETHANE, ALPHA-ISOMETHYL IONONE, CITRONELLOL, COUMARIN, GERANIOL, CITRAL, CI 61570 / GREEN 5, CI 17200 / RED 33, CI 42090 / BLUE 1, CI 19140 / YELLOW 5 (F.I.L. N70043087/1)."
+ItemInci | INCI | String | "ALCOHOL, PARFUM / FRAGRANCE, AQUA / WATER / EAU, LIMONENE, LINALOOL, ETHYLHEXYL SALICYLATE, BUTYL METHOXYDIBENZOYLMETHANE, HYDROXYCITRONELLAL, COUMARIN, BENZYL BENZOATE, EVERNIA PRUNASTRI EXTRACT / OAKMOSS EXTRACT, CITRAL, BENZYL ALCOHOL, GERANIOL, ISOEUGENOL, TRIS(TETRAMETHYLHYDROXYPIPERIDINOL) CITRATE, EUGENOL, CITRONELLOL, CI 60730 / EXT. VIOLET 2, CI 42090 / BLUE 1, CI 19140 / YELLOW 5 (F.I.L. N292557/1)."
+ItemInci | INCI | String | "ALCOHOL, PARFUM / FRAGRANCE, AQUA / WATER, LIMONENE, LINALOOL, ETHYLHEXYL METHOXYCINNAMATE, ETHYLHEXYL SALICYLATE, BUTYL METHOXYDIBENZOYLMETHANE, COUMARIN, HYDROXYCITRONELLAL, BENZYL BENZOATE, EVERNIA PRUNASTRI EXTRACT / OAKMOSS EXTRACT, CITRAL, BENZYL ALCOHOL, GERANIOL, ISOEUGENOL, CITRONELLOL, EUGENOL, BHT, CI 60730 / EXT. VIOLET 2, CI 42090 / BLUE 1, CI 19140 / YELLOW 5 (F.I.L. B266729/1)."
+ItemJarSymbol | Jar Symbol (Item) | CVL | null
+ItemLaunchDate | Launch date | String | ""
+ItemLength | Length | String | "3"
+ItemLength | Length | String | "3.3"
+ItemLength | Length | String | "3.6"
+ItemLength | Length | String | "3.9"
+ItemMLGR | MLGR | Double | 100.0
+ItemMLGR | MLGR | Double | 30.0
+ItemMLGR | MLGR | Double | 50.0
+ItemMakeupFinish | Makeup Finish | CVL | null
+ItemManufacturer | Manufacturer (Item) | String | "AZZARO PARFUMS"
+ItemNetMass | Net mass in kg (Item) | String | ""
+ItemNumber | Item number | String | "10700103001"
+ItemNumber | Item number | String | "10700103002"
+ItemNumber | Item number | String | "10700103005"
+ItemNumber | Item number | String | "107001030059"
+ItemNumber | Item number | String | "10700103011"
+ItemOutsideEUPerson | Name of the responsible person (Item) | String | ""
+ItemOutsideEUPersonEAdress | Electronic address of the responsible person (Item) | String | ""
+ItemOutsideEUPersonPostalAdress | Postal address of the responsible person (Item) | String | ""
+ItemPackagingAluminium | PCS Aluminium packaging (Item) | String | ""
+ItemPackagingCardboard | PCS Cardboard packaging (Item) | String | ""
+ItemPackagingCartons | PCS Food- and drinking cartons packaging (Item) | String | ""
+ItemPackagingGlass | PCS Glass packaging (Item) | String | ""
+ItemPackagingGlass | PCS Glass packaging (Item) | String | "121.1"
+ItemPackagingGlass | PCS Glass packaging (Item) | String | "181.1"
+ItemPackagingMetal | PCS Metal packaging (Item) | String | ""
+ItemPackagingMetal | PCS Metal packaging (Item) | String | "2.21"
+ItemPackagingPlastic | PCS Plastic packaging (Item) | String | ""
+ItemPackagingPlastic | PCS Plastic packaging (Item) | String | "17.99"
+ItemPackagingPlasticFlexible | PCS Plastic packaging Flexible (Item) | String | ""
+ItemPackagingPlasticFoam | PCS Plastic packaging Foam (Item) | String | ""
+ItemPackagingPlasticRigid | PCS Plastic packaging Rigid (Item) | String | ""
+ItemPackagingPlasticRigidPET | PCS Plastic packaging Rigid PET (Item) | String | ""
+ItemPackagingWood | PCS Wood packaging (Item) | String | ""
+ItemPackingGroup | Packing group | CVL | "II"
+ItemPalCardboardPack | PAL Cardboard packaging (Item) | String | ""
+ItemPalPaperPack | PAL Paper packaging (Item) | String | ""
+ItemPalPlasticPack | PAL Plastic packaging (Item) | String | ""
+ItemPalWoodPack | PAL Wood packaging (Item) | String | ""
+ItemPaper | PCS Paper packaging (Item) | String | ""
+ItemPaper | PCS Paper packaging (Item) | String | "15.76"
+ItemPaper | PCS Paper packaging (Item) | String | "21.13"
+ItemPostalAdd | Postal address (Item) | String | "14, rue Royale - 75008 Paris France"
+ItemProductIdReference | Product ID Reference | String | ""
+ItemRefillerRefillable | Refiller / Refillable | CVL | null
+ItemReflex | Reflex | String | ""
+ItemReleaseGS1 | Release GS1 | Boolean | true
+ItemReleaseKodabas | Release Kodabas | Boolean | true
+ItemReleaseSynka | Release Synka | Boolean | true
+ItemReleaseValidoo | Release Validoo | Boolean | true
+ItemShelfLife | Shelf Life (Item) | CVL | null
+ItemSize | Size (Item) | CVL | null
+ItemSource | Source of the specimen  (Item) | CVL | null
+ItemSpecialColors | Special Colors | CVL | null
+ItemSpeciesCountryOfOrigin | Species country of origin (Item) | String | ""
+ItemStatus | Status | String | "20"
+ItemSubCategoryFinans | Sub Category Finans (Item) | String | ""
+ItemTeaserTx | Teaser (Item) | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ItemTeaserTx | Teaser (Item) | LocaleString | {"da":"AZZARO Chrome Eau de toilette 100 ML","en":"AZZARO Chrome Eau de toilette 100 ML","fi":"","no":"AZZARO Chrome Eau de toilette 100 ML","sv":"AZZARO Chrome Eau de toilette 100 ML"}
+ItemTemp | Update field | String | ""
+ItemTemp | Update field | String | "JM: 12-03-2025 15:01   "
+ItemTemp | Update field | String | "JM: 12-03-2025 15:01  "
+ItemTemp | Update field | String | "JM: 17-03-2025 08:02      "
+ItemTester | Tester | String | ""
+ItemTester | Tester | String | "107001030019"
+ItemTester | Tester | String | "107001030059"
+ItemTextureFragrance | Texture Fragrance | CVL | null
+ItemTopNotes | Top Notes (Item) | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ItemTopNotes | Top Notes (Item) | LocaleString | {"da":"","en":"Rosemary, Pineapple, Neroli, Bergamot, Lemon","fi":"","no":"","sv":""}
+ItemTotalPackaging | PCS total amount of packaging in gram (Item) | String | ""
+ItemTotalPackaging | PCS total amount of packaging in gram (Item) | String | "157.06"
+ItemTotalPackaging | PCS total amount of packaging in gram (Item) | String | "222.43"
+ItemType | Item type | String | "Standard (alle normale salgsvarer)-1450"
+ItemType | Item type | String | "Testers+tester products(7230)"
+ItemUNNumber | UN number | CVL | "1266"
+ItemUndertoneMakeup | Undertone Makeup | CVL | null
+ItemUnitNew | Unit | String | "ml"
+ItemUrl | URL Address | String | ""
+ItemWarning | Warnings Yes/No (Item) | CVL | "Yes"
+ItemWarning | Warnings Yes/No (Item) | CVL | null
+ItemWarningText | Warning text (Item) | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ItemWarningText | Warning text (Item) | LocaleString | {"da":"VIGTIGT:\nPRODUKTET ER BRANDFARLIGT, INDTIL DET ER TØRT.\nBRUGES FJERNT FRA ÅBEN ILD OG ANDEN VARMEKILDE.\nUNDGÅ AT SPRAYE MOD ØJNENE.","en":"IMPORTANT:IMPORTANT:\nTHE PRODUCT IS FLAMMABLE UNTIL DRY.\nUSE AWAY FROM OPEN FLAMES AND OTHER HEAT SOURCES.\nAVOID SPRAYING TOWARDS THE EYES.","fi":"TÄRKEÄÄ:\nSYTTYVÄÄ\nKUNNES KUIVUNUT.\nVÄLTÄ AVOTULTA JA\nMUITA\nLÄMMÖNLÄHTEITÄ.\nVARO SUIHKUTTAMASTA\nSILMIIN.","no":"VIGTIGT:\nPRODUKTET ER\nBRANDFARLIGT, INDTIL\nDET ER TØRT.\nBRUGES FJERNT FRA\nÅBEN ILD OG ANDEN\nVARMEKILDE.\nUNDGÅ AT SPRAYE MOD\nØJNENE.","sv":"VIKTIGT:\nPRODUKTEN \nÄR BRANDFARLIG TILLS \nDEN HAR TORKAT.\nANVÄNDS ÅTSKILT \nFRÅN ÖPPEN LÅGA \nOCH ANDRA \nVÄRMEKÄLLOR.\nUNDVIK ATT SPRAYA \nMOT ÖGONEN."}
+ItemWarningText | Warning text (Item) | LocaleString | {"da":"VIGTIGT:\nPRODUKTET ER BRANDFARLIGT, INDTIL DET ER TØRT.\nBRUGES FJERNT FRA ÅBEN ILD OG ANDEN VARMEKILDE.\nUNDGÅ AT SPRAYE MOD ØJNENE.","en":"IMPORTANT:\nTHE PRODUCT IS FLAMMABLE UNTIL DRY.\nUSE AWAY FROM OPEN FLAMES AND OTHER HEAT SOURCES.\nAVOID SPRAYING TOWARDS THE EYES.","fi":"TÄRKEÄÄ:\nSYTTYVÄÄ\nKUNNES KUIVUNUT.\nVÄLTÄ AVOTULTA JA\nMUITA\nLÄMMÖNLÄHTEITÄ.\nVARO SUIHKUTTAMASTA\nSILMIIN.","no":"VIGTIGT:\nPRODUKTET ER\nBRANDFARLIGT, INDTIL\nDET ER TØRT.\nBRUGES FJERNT FRA\nÅBEN ILD OG ANDEN\nVARMEKILDE.\nUNDGÅ AT SPRAYE MOD\nØJNENE.","sv":"VIKTIGT:\nPRODUKTEN \nÄR BRANDFARLIG TILLS \nDEN HAR TORKAT.\nANVÄNDS ÅTSKILT \nFRÅN ÖPPEN LÅGA \nOCH ANDRA \nVÄRMEKÄLLOR.\nUNDVIK ATT SPRAYA \nMOT ÖGONEN."}
+ItemWebColor | Web color | CVL | null
+ItemWebSite | Web Site (Item) | String | ""
+ItemWebname | Webname | String | "Chrome Eau de toilette 100 ml"
+ItemWebname | Webname | String | "Chrome Eau de toilette 30 ml"
+ItemWebname | Webname | String | "Chrome Eau de toilette 50 ml"
+ItemWebname | Webname | String | "Chrome Eau de toilette tester 100 ml"
+ItemWebname | Webname | String | "Chrome United eau de toilette 100 ml"
+ItemWebnameEdited | Webname Edited | String | ""
+ItemWidth | Width | String | "7"
+ItemWidth | Width | String | "7.9"
+ItemWidth | Width | String | "8.7"
+ItemWidth | Width | String | "9.4"
+ProductAfterSun | After Sun | CVL | null
+ProductAge | Age | CVL | null
+ProductBaseColor | Base Color | String | ""
+ProductBaseNotes | Base Notes | CVL | ["Mandarine","Grapefruit","Blackberry"]
+ProductBleachesAndLightning | Bleaches And Lightning | CVL | null
+ProductBodyProductsFragrance | Body Products Fragrance | CVL | null
+ProductBodyTx | Body | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ProductBodycare | Bodycare | CVL | null
+ProductBrand | Brand | String | "AZZARO"
+ProductBrandShortText | Brand Short Text | CVL | null
+ProductCategory1 | Category 1 | CVL | "Fragrance"
+ProductCategory2 | Category 2 | CVL | "FRGPerfume"
+ProductCategory3 | Category 3 | CVL | "FRGEdt"
+ProductCategoryNew | Category | String | "FRG Edt"
+ProductCertifications | Certifications | CVL | ["Vegan","TheNordicEcoLabel"]
+ProductColor | Color | CVL | null
+ProductColor2 | Color (Makeup / Non Sellable) | CVL | null
+ProductColorDescription | Color description | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ProductColorIntensityMakeupCoverage | Color Intensity Makeup Coverage | CVL | null
+ProductConcentration | Concentration | CVL | null
+ProductContent | Content | CVL | ["WithoutParabens","WithoutSilicone","Vegan"]
+ProductCountryOfOriginNew | Country Of Origin | String | "FR"
+ProductCustomsNumber | Customs Number | String | "33030090"
+ProductDeodorant | Deodorant | CVL | null
+ProductERPTimestamp | ERP Timestamp | DateTime | "2026-08-21T08:00:28.0000000"
+ProductEditionNumber | Edition Number | String | ""
+ProductExpertTip | Expert Tip | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ProductExtensions | Extensions | CVL | null
+ProductFormSkincare | Form Skincare | CVL | null
+ProductFragranceDescription | Fragrance Description | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ProductFragranceFamily | Fragrance Family | CVL | "WoodsAndLeather"
+ProductGender | Gender | CVL | "Man"
+ProductHairAccessories | Hair Accesories | CVL | null
+ProductHaircareTexture | Haircare Texture | CVL | null
+ProductHairtype | Hairtype | CVL | null
+ProductHeartNotes | Heart Notes | CVL | ["Bergamot","Bitterorange"]
+ProductHex | Hex | String | ""
+ProductHowToTx | How To | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ProductID | Product ID | String | "10700103"
+ProductInci | INCI | String | "ALCOHOL, PARFUM / FRAGRANCE, AQUA / WATER, LIMONENE, LINALOOL, ETHYLHEXYL METHOXYCINNAMATE, ETHYLHEXYL SALICYLATE, BUTYL METHOXYDIBENZOYLMETHANE, COUMARIN, HYDROXYCITRONELLAL, BENZYL BENZOATE, EVERNIA PRUNASTRI EXTRACT / OAKMOSS EXTRACT, CITRAL, BENZYL ALCOHOL, GERANIOL, ISOEUGENOL, CITRONELLOL, EUGENOL, BHT, CI 60730 / EXT. VIOLET 2, CI 42090 / BLUE 1, CI 19140 / YELLOW 5 (F.I.L. B266729/1)."
+ProductItemTypeNew | Item Type | String | ""
+ProductKeyIngredients | Key Ingredients | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ProductLinkedItems | Linked item (IMPACT LOGIC FIELD) | String | "10700103001;10700103005;107001030059;10700103011;10700103002"
+ProductMakeupFinish | Makeup Finish | CVL | null
+ProductNailPolish | Nail Polish | CVL | null
+ProductNailcare | Nailcare | CVL | null
+ProductName | Name | String | "AZZARO Chrome Eau de toilette tester"
+ProductPerm | Perm | CVL | null
+ProductProducttypeMen | Product Type Men | CVL | null
+ProductPropertiesHaircare | Properties Haircare | CVL | null
+ProductPropertiesMakeup | Properties Makeup | CVL | null
+ProductPropertiesSkincare | Properties Skincare | CVL | null
+ProductQualityBody | Quality Body | CVL | null
+ProductQualityHaircare | Quality Haircare | CVL | null
+ProductQualityMakeup | Quality Makeup | CVL | null
+ProductQualitySkincare | Quality Skincare | CVL | null
+ProductReflex | Reflex | String | ""
+ProductReleaseGS1 | Release GS1 | Boolean | false
+ProductReleaseKodabas | Release Kodabas | Boolean | false
+ProductReleaseSynka | Release Synka | Boolean | false
+ProductReleaseValidoo | Release Validoo | Boolean | false
+ProductSeason | Season | CVL | null
+ProductSelftan | Selftan | CVL | null
+ProductSize | Size | CVL | null
+ProductSkintoneMakeup | Skintone Makeup | CVL | null
+ProductSkintype | Skintype | CVL | null
+ProductSpecialColors | Special Colors | CVL | null
+ProductSpecialNeeds | Special Needs Suncare | CVL | null
+ProductSpecialNeedsMakeup | Special Needs Makeup | CVL | null
+ProductSpecialNeedsSkincare | Special Needs Skincare | CVL | null
+ProductSpecialNeedshairConcern | Special Needs Hair - Concern | CVL | null
+ProductSpecialcareBody | Specialcare Body | CVL | null
+ProductStatus | Status | String | ""
+ProductStylingTexture | Styling Texture | CVL | null
+ProductSunProtection | Sun Protection | CVL | null
+ProductTeaserTx | Teaser | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ProductTemp | ProductTemp | String | "update2   "
+ProductTester | Tester | String | ""
+ProductTexture | Texture Fragrance | CVL | null
+ProductTextureBodycare | Texture Bodycare | CVL | null
+ProductTextureMakeup | Texture Makeup | CVL | null
+ProductTextureSkincare | Texture Skincare | CVL | null
+ProductTextureSuncare | Texture Suncare | CVL | null
+ProductTopNotes | Top Notes | CVL | ["Citrus"]
+ProductUndertoneMakeup | Undertone Makeup | CVL | null
+ProductUsageSuncare | Usage Suncare | CVL | null
+ProductUsagedayNight | Usage Day/Night | CVL | null
+ProductWebname | Webname | LocaleString | {"da":"","en":"","fi":"","no":"","sv":""}
+ShelfLiferelevant | Shelf Life relevant | CVL | null
