@@ -24,8 +24,19 @@ pub struct InriverSource {
 struct QueryRequest {
     system_criteria: Vec<SystemCriterion>,
 
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    data_criteria: Vec<DataCriterion>,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     objects: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct DataCriterion {
+    field_type_id: String,
+    operator: String,
+    value: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -64,11 +75,13 @@ impl InriverSource {
             return Ok(Vec::new());
         }
 
-        let result = self.query_products().await?;
+        let result = self
+            .query_products_by_field("ProductName", "Contains", &search_term)
+            .await?;
 
         let mut matches = Vec::new();
 
-        for entity_id in result.entity_ids.into_iter().take(100) {
+        for entity_id in result.entity_ids {
             let bundle = self.get_entity_bundle(entity_id).await?;
 
             let product = map_inriver_entity(&bundle)?;
@@ -139,6 +152,7 @@ impl InriverSource {
 
         let request = QueryRequest {
             system_criteria: criteria,
+            data_criteria: Vec::new(),
             objects: None,
         };
 
@@ -168,6 +182,56 @@ impl InriverSource {
 
         serde_json::from_str(&body)
             .with_context(|| format!("Failed to parse Inriver query response: {body}"))
+    }
+
+    pub async fn query_products_by_field(
+        &self,
+        field_type_id: &str,
+        operator: &str,
+        value: &str,
+    ) -> Result<QueryResponse> {
+        let request = QueryRequest {
+            system_criteria: vec![SystemCriterion {
+                criterion_type: "EntityTypeId".to_string(),
+                value: "Product".to_string(),
+                operator: "Equal".to_string(),
+            }],
+
+            data_criteria: vec![DataCriterion {
+                field_type_id: field_type_id.to_string(),
+                operator: operator.to_string(),
+                value: value.to_string(),
+            }],
+
+            objects: None,
+        };
+
+        let url = format!(
+            "{}/api/v1.0.0/query",
+            self.config.api_url.trim_end_matches('/')
+        );
+
+        let response = self
+            .client
+            .post(&url)
+            .json(&request)
+            .send()
+            .await
+            .context("Failed to query Inriver by product field")?;
+
+        let status = response.status();
+
+        let body = response
+            .text()
+            .await
+            .context("Failed to read Inriver field query response")?;
+
+        if !status.is_success() {
+            bail!("Inriver field query failed with HTTP {}: {}", status, body);
+        }
+
+        serde_json::from_str(&body)
+            .with_context(|| format!("Failed to parse Inriver field query response: {body}"))
     }
 
     pub async fn get_entity_summary(&self, entity_id: i64) -> Result<Value> {
@@ -808,6 +872,9 @@ mod tests {
                 value: "Product".to_string(),
                 operator: "Equal".to_string(),
             }],
+
+            data_criteria: Vec::new(),
+
             objects: None,
         };
 
@@ -1088,5 +1155,29 @@ mod integration_tests {
         assert!(!products.is_empty());
 
         println!("{}", serde_json::to_string_pretty(&products).unwrap());
+    }
+
+    #[tokio::test]
+    #[ignore = "requires live Inriver credentials"]
+    async fn queries_products_by_name() {
+        dotenvy::dotenv().ok();
+
+        let config = InriverConfig::from_env().expect("Missing Inriver config");
+
+        let source = InriverSource::new(config).expect("Could not create Inriver source");
+
+        let result = source
+            .query_products_by_field("ProductName", "Contains", "Chrome")
+            .await
+            .expect("Product name query failed");
+
+        println!("Found {} matching product entities", result.count);
+
+        println!("Entity IDs: {:?}", result.entity_ids);
+
+        assert!(
+            !result.entity_ids.is_empty(),
+            "No Chrome products were returned"
+        );
     }
 }
