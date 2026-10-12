@@ -209,10 +209,6 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
 
     let linked_item_summary = find_linked_entity_summary(json, "Item");
 
-    let upc_code = linked_item_summary
-        .as_ref()
-        .and_then(|item_summary| non_empty_string(item_summary, "displayDescription"));
-
     let linked_item_name = linked_item_summary
         .as_ref()
         .and_then(|item_summary| non_empty_string(item_summary, "displayName"))
@@ -275,6 +271,26 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
 
     let total_packaging_g = parse_f64_field(&fields, "ItemTotalPackaging");
 
+    let net_weight_g = parse_f64_field(&fields, "ItemMLGR");
+
+    let dangerous_goods = optional_field_string(&fields, "ItemDangerGoods");
+
+    let danger_class = optional_field_string(&fields, "ItemDangerClass");
+
+    let un_number = optional_field_string(&fields, "ItemUNNumber");
+
+    let packing_group = optional_field_string(&fields, "ItemPackingGroup");
+
+    let flash_point = parse_f64_field(&fields, "ItemFlashPoint");
+
+    let cpnp_number = optional_field_string(&fields, "CPNPNumber");
+
+    let shelf_life = optional_field_string(&fields, "ItemShelfLife");
+
+    let period_after_opening = optional_field_string(&fields, "ItemFirstOpening");
+
+    let expiration_date = optional_field_string(&fields, "ItemExpirationDate");
+
     let top_notes = locale_field(&fields, "ItemTopNotes", "en");
 
     let heart_notes = locale_field(&fields, "ItemHeartNotes", "en");
@@ -320,7 +336,7 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
         secondary_height_mm: None,
         secondary_volume_mm3: None,
 
-        net_weight_g: None,
+        net_weight_g,
         gross_weight_g: None,
         piece_weight_g: None,
 
@@ -359,12 +375,25 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
 
         alcohol_percent,
         gender,
-
         total_packaging_g,
+
+        dangerous_goods,
+        danger_class,
+        un_number,
+        packing_group,
+        flash_point,
 
         top_notes,
         heart_notes,
         base_notes,
+
+        cpnp_number,
+
+        shelf_life,
+
+        period_after_opening,
+
+        expiration_date,
 
         modified_at,
     })
@@ -654,13 +683,25 @@ fn first_non_empty(values: &[String]) -> String {
 }
 
 fn parse_f64_field(fields: &[&Value], field_type_id: &str) -> Option<f64> {
-    let value = field_string(fields, field_type_id);
+    let field = field(fields, field_type_id)?;
 
-    if value.trim().is_empty() {
-        return None;
+    let value = field.get("value")?;
+
+    if let Some(number) = value.as_f64() {
+        return Some(number);
     }
 
-    value.replace(',', ".").parse::<f64>().ok()
+    if let Some(text) = value.as_str() {
+        let text = text.trim();
+
+        if text.is_empty() {
+            return None;
+        }
+
+        return text.replace(',', ".").parse::<f64>().ok();
+    }
+
+    None
 }
 
 fn parse_cm_as_mm_field(fields: &[&Value], field_type_id: &str) -> Option<f64> {

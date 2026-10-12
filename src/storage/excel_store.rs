@@ -524,6 +524,20 @@ fn map_row(
 
         total_packaging_g: None,
 
+        cpnp_number: None,
+
+        shelf_life: None,
+
+        period_after_opening: None,
+
+        dangerous_goods: None,
+        danger_class: None,
+        un_number: None,
+        packing_group: None,
+        flash_point: None,
+
+        expiration_date: None,
+
         top_notes: String::new(),
         heart_notes: String::new(),
         base_notes: String::new(),

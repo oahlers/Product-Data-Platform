@@ -140,6 +140,33 @@ pub struct Product {
     #[serde(default)]
     pub plastic_g: Option<f64>,
 
+    #[serde(default)]
+    pub cpnp_number: Option<String>,
+
+    #[serde(default)]
+    pub shelf_life: Option<String>,
+
+    #[serde(default)]
+    pub period_after_opening: Option<String>,
+
+    #[serde(default)]
+    pub expiration_date: Option<String>,
+
+    #[serde(default)]
+    pub dangerous_goods: Option<String>,
+
+    #[serde(default)]
+    pub danger_class: Option<String>,
+
+    #[serde(default)]
+    pub un_number: Option<String>,
+
+    #[serde(default)]
+    pub packing_group: Option<String>,
+
+    #[serde(default)]
+    pub flash_point: Option<f64>,
+
     #[serde(default = "Utc::now")]
     pub modified_at: DateTime<Utc>,
 
