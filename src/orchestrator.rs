@@ -8,9 +8,9 @@ use crate::{agents, models::result::SkuResult, state::AppState, status_engine};
 
 pub async fn process_sku(state: Arc<AppState>, sku: &str) -> Result<SkuResult> {
     let product = state
-        .product_cache
-        .get(sku)
-        .cloned()
+        .product_source
+        .product(sku)
+        .await?
         .ok_or_else(|| anyhow!("SKU not found: {sku}"))?;
 
     let (validation, text_qa, inci, translation) = join!(
@@ -25,7 +25,7 @@ pub async fn process_sku(state: Arc<AppState>, sku: &str) -> Result<SkuResult> {
     let overall_status = status_engine::calculate(&validation, &text_qa, &inci);
 
     let result = SkuResult {
-        sku: product.sku,
+        sku: product.sku.clone(),
         validation,
         text_qa,
         inci,
@@ -41,7 +41,7 @@ pub async fn process_sku(state: Arc<AppState>, sku: &str) -> Result<SkuResult> {
 }
 
 pub async fn process_all(state: Arc<AppState>) -> Result<Vec<SkuResult>> {
-    let products: Vec<_> = state.product_cache.values().cloned().collect();
+    let products = state.product_source.products().await?;
 
     let mut results = Vec::with_capacity(products.len());
 

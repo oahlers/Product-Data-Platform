@@ -25,6 +25,8 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/health", get(health))
         .route("/products", get(products))
         .route("/products/search", get(search_products))
+        .route("/products/sku/{sku}", get(product_by_sku))
+        .route("/products/ean/{ean}", get(product_by_ean))
         .route("/process-all", post(process_all))
         .route("/process/{sku}", post(process_sku))
         .route("/results/{sku}", get(result))
@@ -38,24 +40,55 @@ async fn health() -> Json<serde_json::Value> {
 }
 
 async fn products(State(state): State<Arc<AppState>>) -> impl IntoResponse {
-    let products: Vec<_> = state.product_cache.values().cloned().collect();
-
-    (StatusCode::OK, Json(json!(products)))
+    match state.product_source.products().await {
+        Ok(products) => (StatusCode::OK, Json(json!(products))),
+        Err(error) => internal_error(error),
+    }
 }
 
 async fn search_products(
     State(state): State<Arc<AppState>>,
     Query(query): Query<SearchQuery>,
 ) -> impl IntoResponse {
+    match state.product_source.search_products(&query.q).await {
+        Ok(products) => (StatusCode::OK, Json(json!(products))),
+        Err(error) => internal_error(error),
+    }
+}
 
-    match state
-        .product_source
-        .search_products(&query.q)
-        .await
-    {
-        Ok(products) => (
-            StatusCode::OK,
-            Json(json!(products)),
+async fn product_by_sku(
+    State(state): State<Arc<AppState>>,
+    Path(sku): Path<String>,
+) -> impl IntoResponse {
+    match state.product_source.product(&sku).await {
+        Ok(Some(product)) => (StatusCode::OK, Json(json!(product))),
+        Ok(None) => (
+            StatusCode::NOT_FOUND,
+            Json(json!({
+                "error": format!(
+                    "Product not found: {}",
+                    sku
+                )
+            })),
+        ),
+        Err(error) => internal_error(error),
+    }
+}
+
+async fn product_by_ean(
+    State(state): State<Arc<AppState>>,
+    Path(ean): Path<String>,
+) -> impl IntoResponse {
+    match state.product_source.product_by_ean(&ean).await {
+        Ok(Some(product)) => (StatusCode::OK, Json(json!(product))),
+        Ok(None) => (
+            StatusCode::NOT_FOUND,
+            Json(json!({
+                "error": format!(
+                    "EAN not found: {}",
+                    ean
+                )
+            })),
         ),
         Err(error) => internal_error(error),
     }

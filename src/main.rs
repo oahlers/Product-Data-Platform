@@ -1,7 +1,6 @@
 mod agents;
 mod ai;
 mod api;
-mod cache;
 mod models;
 mod orchestrator;
 mod scheduler;
@@ -13,8 +12,8 @@ use anyhow::Result;
 use state::AppState;
 use std::{net::SocketAddr, sync::Arc};
 use storage::{
-    excel_store::ExcelStore, inriver_config::InriverConfig, inriver_source::InriverSource,
-    json_store::JsonStore, product_source::ProductSource,
+    inriver_config::InriverConfig, inriver_source::InriverSource, json_store::JsonStore,
+    product_source::ProductSource,
 };
 use tokio::net::TcpListener;
 use tracing::info;
@@ -30,27 +29,6 @@ async fn main() -> Result<()> {
 
     dotenvy::dotenv().ok();
 
-    let excel_store = Arc::new(ExcelStore::new("data/excel"));
-
-    let mut products = excel_store.load_products().await?;
-
-    products.retain(|product| {
-        let sku = product.sku.trim();
-        let upc = product.upc_code.as_deref().unwrap_or_default().trim();
-
-        !sku.is_empty()
-            && !sku.eq_ignore_ascii_case("sku")
-            && !sku.to_lowercase().contains("master data")
-            && !upc.to_lowercase().contains("master data")
-    });
-
-    println!("Loaded {} valid Excel products into cache", products.len());
-
-    let cache = products
-        .into_iter()
-        .map(|product| (product.sku.clone(), product))
-        .collect();
-
     let inriver_config = InriverConfig::from_env()?;
 
     let inriver_source = InriverSource::new(inriver_config)?;
@@ -58,9 +36,10 @@ async fn main() -> Result<()> {
     let product_source: Arc<dyn ProductSource> = Arc::new(inriver_source);
 
     let result_store = Arc::new(JsonStore::new("data/products.json", "results"));
+
     result_store.ensure_files().await?;
 
-    let state = Arc::new(AppState::new(Arc::new(cache), result_store, product_source));
+    let state = Arc::new(AppState::new(result_store, product_source));
 
     let mut scheduler = scheduler::start(Arc::clone(&state)).await?;
     let app = api::router(state);

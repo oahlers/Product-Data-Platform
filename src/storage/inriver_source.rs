@@ -71,7 +71,6 @@ impl InriverSource {
     }
 
     pub async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {
-        
         let search_term = search_term.trim();
 
         if search_term.is_empty() {
