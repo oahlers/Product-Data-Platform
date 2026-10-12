@@ -3,45 +3,34 @@ use crate::{
         client::{AiClient, MockAiClient},
         prompt_loader,
     },
-    models::{
-        product::Product,
-        result::ModuleResult,
-    },
+    models::{product::Product, result::ModuleResult},
 };
 
 pub async fn run(product: &Product) -> ModuleResult {
-
-    let prompt =
-        prompt_loader::load(
-            "translation.txt"
-        )
-        .unwrap_or_default();
+    let prompt = prompt_loader::load("translation.txt").unwrap_or_default();
 
     let input = format!(
-        "Product: {}\n\nMarketing Text:\n{}",
+        "Product Name:\n{}\n\nDescription:\n{}\n\nMarketing Text:\n{}\n\nWarnings:\n{}\n\nDirections:\n{}",
+        product.product_name,
         product.description,
-        product.marketing_text
+        product.marketing_text,
+        product.warnings,
+        product.directions
     );
 
     let client = MockAiClient;
 
-    match client
-        .execute(
-            &prompt,
-            &input,
-        )
-        .await
-    {
+    match client.execute(&prompt, &input).await {
         Ok(response) => ModuleResult {
             status: "PASS".into(),
             findings: vec![response],
+            provider: "mock".into(),
         },
 
         Err(error) => ModuleResult {
             status: "FAIL".into(),
-            findings: vec![
-                error.to_string()
-            ],
+            findings: vec![error.to_string()],
+            provider: "mock".into(),
         },
     }
 }

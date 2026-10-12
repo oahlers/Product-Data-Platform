@@ -5,7 +5,5 @@ use crate::models::product::Product;
 
 #[async_trait]
 pub trait ProductSource: Send + Sync {
-    async fn products(
-        &self,
-    ) -> Result<Vec<Product>>;
+    async fn products(&self) -> Result<Vec<Product>>;
 }

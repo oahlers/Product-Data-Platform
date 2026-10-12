@@ -1,13 +1,28 @@
 use anyhow::{bail, Context, Result};
+<<<<<<< HEAD
 use reqwest::{
     header::{HeaderMap, HeaderValue, ACCEPT, AUTHORIZATION},
+=======
+use chrono::{DateTime, Utc};
+use reqwest::{
+    header::{HeaderMap, HeaderName, HeaderValue, ACCEPT},
+>>>>>>> 4bda541 (Initial Inriver integration working)
     Client,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+<<<<<<< HEAD
 use super::inriver_config::InriverConfig;
 
+=======
+use crate::models::product::Product;
+
+use super::inriver_config::InriverConfig;
+
+const INRIVER_API_KEY_HEADER: &str = "x-inriver-apikey";
+
+>>>>>>> 4bda541 (Initial Inriver integration working)
 #[derive(Debug, Clone)]
 pub struct InriverSource {
     client: Client,
@@ -47,12 +62,44 @@ impl InriverSource {
         let client = Client::builder()
             .default_headers(build_headers(&config)?)
             .build()
+<<<<<<< HEAD
             .context("Could not create Inriver HTTP client")?;
+=======
+            .context("Failed to create Inriver HTTP client")?;
+>>>>>>> 4bda541 (Initial Inriver integration working)
 
         Ok(Self { client, config })
     }
 
+<<<<<<< HEAD
     pub async fn query_entity_ids(
+=======
+    pub async fn query_products(&self) -> Result<QueryResponse> {
+        self.query_entities("Product", None).await
+    }
+
+    pub async fn query_items(&self) -> Result<QueryResponse> {
+        self.query_entities("Item", None).await
+    }
+
+    pub async fn query_resources(&self) -> Result<QueryResponse> {
+        self.query_entities("Resource", None).await
+    }
+
+    pub async fn query_modified_products(&self, modified_since: &str) -> Result<QueryResponse> {
+        self.query_entities("Product", Some(modified_since)).await
+    }
+
+    pub async fn query_modified_items(&self, modified_since: &str) -> Result<QueryResponse> {
+        self.query_entities("Item", Some(modified_since)).await
+    }
+
+    pub async fn query_modified_resources(&self, modified_since: &str) -> Result<QueryResponse> {
+        self.query_entities("Resource", Some(modified_since)).await
+    }
+
+    pub async fn query_entities(
+>>>>>>> 4bda541 (Initial Inriver integration working)
         &self,
         entity_type: &str,
         modified_since: Option<&str>,
@@ -63,10 +110,17 @@ impl InriverSource {
             operator: "Equal".to_string(),
         }];
 
+<<<<<<< HEAD
         if let Some(value) = modified_since {
             criteria.push(SystemCriterion {
                 criterion_type: "LastModified".to_string(),
                 value: value.to_string(),
+=======
+        if let Some(modified_since) = modified_since {
+            criteria.push(SystemCriterion {
+                criterion_type: "LastModified".to_string(),
+                value: modified_since.to_string(),
+>>>>>>> 4bda541 (Initial Inriver integration working)
                 operator: "GreaterThanOrEqual".to_string(),
             });
         }
@@ -76,7 +130,14 @@ impl InriverSource {
             objects: None,
         };
 
+<<<<<<< HEAD
         let url = format!("{}/api/v1.0.0/query", self.config.api_url);
+=======
+        let url = format!(
+            "{}/api/v1.0.0/query",
+            self.config.api_url.trim_end_matches('/')
+        );
+>>>>>>> 4bda541 (Initial Inriver integration working)
 
         let response = self
             .client
@@ -84,6 +145,7 @@ impl InriverSource {
             .json(&request)
             .send()
             .await
+<<<<<<< HEAD
             .context("Inriver query request failed")?;
 
         let status = response.status();
@@ -112,12 +174,36 @@ impl InriverSource {
         let url = format!(
             "{}/api/v1.0.0/entities/{}/summary",
             self.config.api_url,
+=======
+            .context("Failed to query Inriver")?;
+
+        let status = response.status();
+
+        let body = response
+            .text()
+            .await
+            .context("Failed to read Inriver query response")?;
+
+        if !status.is_success() {
+            bail!("Inriver query failed with HTTP {}: {}", status, body);
+        }
+
+        serde_json::from_str(&body)
+            .with_context(|| format!("Failed to parse Inriver query response: {body}"))
+    }
+
+    pub async fn get_entity_summary(&self, entity_id: i64) -> Result<Value> {
+        let url = format!(
+            "{}/api/v1.0.0/entities/{}/summary",
+            self.config.api_url.trim_end_matches('/'),
+>>>>>>> 4bda541 (Initial Inriver integration working)
             entity_id
         );
 
         self.get_json(&url).await
     }
 
+<<<<<<< HEAD
     pub async fn get_entity_fields(
         &self,
         entity_id: i64,
@@ -125,12 +211,19 @@ impl InriverSource {
         let url = format!(
             "{}/api/v1.0.0/entities/{}/summary/fields",
             self.config.api_url,
+=======
+    pub async fn get_entity_fields(&self, entity_id: i64) -> Result<Value> {
+        let url = format!(
+            "{}/api/v1.0.0/entities/{}/summary/fields",
+            self.config.api_url.trim_end_matches('/'),
+>>>>>>> 4bda541 (Initial Inriver integration working)
             entity_id
         );
 
         self.get_json(&url).await
     }
 
+<<<<<<< HEAD
     pub async fn get_entity_bundle(
         &self,
         entity_id: i64,
@@ -138,12 +231,27 @@ impl InriverSource {
         let url = format!(
             "{}/api/v1.0.0/entities/{}/linksandfields",
             self.config.api_url,
+=======
+    pub async fn get_entity_bundle(&self, entity_id: i64) -> Result<Value> {
+        let url = format!(
+            "{}/api/v1.0.0/entities/{}/linksandfields",
+            self.config.api_url.trim_end_matches('/'),
+>>>>>>> 4bda541 (Initial Inriver integration working)
             entity_id
         );
 
         self.get_json(&url).await
     }
 
+<<<<<<< HEAD
+=======
+    pub async fn get_product(&self, entity_id: i64) -> Result<Product> {
+        let bundle = self.get_entity_bundle(entity_id).await?;
+
+        map_inriver_entity(&bundle)
+    }
+
+>>>>>>> 4bda541 (Initial Inriver integration working)
     async fn get_json(&self, url: &str) -> Result<Value> {
         let response = self
             .client
@@ -153,6 +261,7 @@ impl InriverSource {
             .with_context(|| format!("Inriver GET request failed: {url}"))?;
 
         let status = response.status();
+<<<<<<< HEAD
         let body = response
             .text()
             .await
@@ -195,15 +304,333 @@ fn build_headers(config: &InriverConfig) -> Result<HeaderMap> {
         HeaderValue::from_str(&authorization)
             .context("Invalid Inriver authorization header")?,
     );
+=======
+
+        let body = response
+            .text()
+            .await
+            .context("Failed to read Inriver response")?;
+
+        if !status.is_success() {
+            bail!("Inriver request failed with HTTP {}: {}", status, body);
+        }
+
+        serde_json::from_str(&body)
+            .with_context(|| format!("Failed to parse Inriver JSON response: {body}"))
+    }
+}
+
+pub fn map_inriver_entity(json: &Value) -> Result<Product> {
+    let summary = json
+        .get("summary")
+        .context("Inriver bundle is missing root summary")?;
+
+    let mut fields = Vec::new();
+    collect_fields(json, &mut fields);
+
+    let sku = summary_string(summary, "displayDescription");
+
+    if sku.is_empty() {
+        bail!("Inriver entity is missing SKU/displayDescription");
+    }
+
+    let linked_item_summary = find_linked_entity_summary(json, "Item");
+
+    let upc_code = linked_item_summary
+        .as_ref()
+        .and_then(|item_summary| non_empty_string(item_summary, "displayDescription"));
+
+    let linked_item_name = linked_item_summary
+        .as_ref()
+        .and_then(|item_summary| non_empty_string(item_summary, "displayName"))
+        .unwrap_or_default();
+
+    let product_name = first_non_empty(&[
+        field_string(&fields, "ItemWebname"),
+        linked_item_name,
+        summary_string(summary, "displayName"),
+    ]);
+
+    let description = first_non_empty(&[
+        locale_field(&fields, "ItemBodyTx", "en"),
+        locale_field(&fields, "ItemTeaserTx", "en"),
+    ]);
+
+    let marketing_text = first_non_empty(&[
+        locale_field(&fields, "ItemTeaserTx", "en"),
+        locale_field(&fields, "ItemBodyTx", "en"),
+    ]);
+
+    let directions = first_non_empty(&[
+        locale_field(&fields, "ItemHowToTx", "en"),
+        field_string(&fields, "ItemHowToTx"),
+    ]);
+
+    let warnings = first_non_empty(&[
+        locale_field(&fields, "ItemWarningsTx", "en"),
+        locale_field(&fields, "ItemWarningTx", "en"),
+        locale_field(&fields, "ItemPrecautionsTx", "en"),
+        field_string(&fields, "ItemWarnings"),
+        field_string(&fields, "ItemWarning"),
+    ]);
+
+    let inci = field_string(&fields, "ItemInci");
+
+    let brand = first_non_empty(&[
+        field_string(&fields, "ItemBrand"),
+        field_string(&fields, "ProductBrand"),
+        field_string(&fields, "Brand"),
+    ]);
+
+    let modified_at = parse_modified_at(summary).unwrap_or_else(Utc::now);
+
+    Ok(Product {
+        sku,
+        upc_code,
+        brand,
+        product_name,
+        description,
+        marketing_text,
+        inci,
+        warnings,
+        directions,
+
+        width_mm: None,
+        depth_mm: None,
+        height_mm: None,
+        primary_volume_mm3: None,
+
+        secondary_width_mm: None,
+        secondary_depth_mm: None,
+        secondary_height_mm: None,
+        secondary_volume_mm3: None,
+
+        net_weight_g: None,
+        gross_weight_g: None,
+        piece_weight_g: None,
+
+        items_per_prepack: None,
+        prepacks_per_shipper: None,
+        items_per_shipper: None,
+
+        shipper_width_mm: None,
+        shipper_depth_mm: None,
+        shipper_height_mm: None,
+        shipper_weight_g: None,
+        shipper_volume_mm3: None,
+
+        case_weight_g: None,
+        carton_weight_g: None,
+        pieces_per_case: None,
+        cases_per_carton: None,
+
+        shippers_per_pallet: None,
+        items_per_pallet: None,
+        pallet_height_mm: None,
+        pallet_weight_g: None,
+        pallet_gtin: None,
+
+        cube: None,
+        interspace_percent: None,
+
+        packaging_material_layers: None,
+        paper_cardboard_g: None,
+        glass_g: None,
+        textiles_wood_g: None,
+        tinplate_g: None,
+        aluminium_g: None,
+        plastic_g: None,
+
+        modified_at,
+    })
+}
+
+fn build_headers(config: &InriverConfig) -> Result<HeaderMap> {
+    let mut headers = HeaderMap::new();
+
+    headers.insert(ACCEPT, HeaderValue::from_static("application/json"));
+
+    let api_key_header = HeaderName::from_static(INRIVER_API_KEY_HEADER);
+
+    let api_key = HeaderValue::from_str(config.token.trim())
+        .context("Invalid Inriver API key header value")?;
+
+    headers.insert(api_key_header, api_key);
+>>>>>>> 4bda541 (Initial Inriver integration working)
 
     Ok(headers)
 }
 
+<<<<<<< HEAD
+=======
+fn collect_fields<'a>(value: &'a Value, output: &mut Vec<&'a Value>) {
+    match value {
+        Value::Object(object) => {
+            if object.contains_key("fieldTypeId") && object.contains_key("value") {
+                output.push(value);
+            }
+
+            for child in object.values() {
+                collect_fields(child, output);
+            }
+        }
+
+        Value::Array(values) => {
+            for child in values {
+                collect_fields(child, output);
+            }
+        }
+
+        _ => {}
+    }
+}
+
+fn find_linked_entity_summary(value: &Value, entity_type_id: &str) -> Option<Value> {
+    match value {
+        Value::Object(object) => {
+            if let Some(summary) = object.get("summary") {
+                let current_type = summary.get("entityTypeId").and_then(Value::as_str);
+
+                if current_type == Some(entity_type_id) {
+                    return Some(summary.clone());
+                }
+            }
+
+            for child in object.values() {
+                if let Some(summary) = find_linked_entity_summary(child, entity_type_id) {
+                    return Some(summary);
+                }
+            }
+
+            None
+        }
+
+        Value::Array(values) => {
+            for child in values {
+                if let Some(summary) = find_linked_entity_summary(child, entity_type_id) {
+                    return Some(summary);
+                }
+            }
+
+            None
+        }
+
+        _ => None,
+    }
+}
+
+fn field<'a>(fields: &[&'a Value], field_type_id: &str) -> Option<&'a Value> {
+    fields
+        .iter()
+        .copied()
+        .find(|field| field.get("fieldTypeId").and_then(Value::as_str) == Some(field_type_id))
+}
+
+fn field_string(fields: &[&Value], field_type_id: &str) -> String {
+    let Some(field) = field(fields, field_type_id) else {
+        return String::new();
+    };
+
+    if let Some(value) = field.get("value").and_then(Value::as_str) {
+        if !value.trim().is_empty() {
+            return value.trim().to_string();
+        }
+    }
+
+    field
+        .get("displayValue")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .unwrap_or_default()
+        .to_string()
+}
+
+fn locale_field(fields: &[&Value], field_type_id: &str, preferred_language: &str) -> String {
+    let Some(field) = field(fields, field_type_id) else {
+        return String::new();
+    };
+
+    let Some(value) = field.get("value") else {
+        return String::new();
+    };
+
+    if let Some(text) = value.as_str() {
+        return text.trim().to_string();
+    }
+
+    let Some(locales) = value.as_object() else {
+        return String::new();
+    };
+
+    if let Some(text) = locales
+        .get(preferred_language)
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        return text.to_string();
+    }
+
+    if let Some(text) = locales
+        .get("en")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+    {
+        return text.to_string();
+    }
+
+    locales
+        .values()
+        .filter_map(Value::as_str)
+        .map(str::trim)
+        .find(|value| !value.is_empty())
+        .unwrap_or_default()
+        .to_string()
+}
+
+fn summary_string(summary: &Value, property: &str) -> String {
+    summary
+        .get(property)
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .unwrap_or_default()
+        .to_string()
+}
+
+fn non_empty_string(value: &Value, property: &str) -> Option<String> {
+    value
+        .get(property)
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|value| !value.is_empty())
+        .map(ToString::to_string)
+}
+
+fn first_non_empty(values: &[String]) -> String {
+    values
+        .iter()
+        .find(|value| !value.trim().is_empty())
+        .cloned()
+        .unwrap_or_default()
+}
+
+fn parse_modified_at(summary: &Value) -> Option<DateTime<Utc>> {
+    let value = summary.get("modifiedDate").and_then(Value::as_str)?;
+
+    DateTime::parse_from_rfc3339(value)
+        .map(|date| date.with_timezone(&Utc))
+        .ok()
+}
+
+>>>>>>> 4bda541 (Initial Inriver integration working)
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
+<<<<<<< HEAD
     fn creates_quer*_payload() {
         let request =*QueryRequest {
             system_*riteria: vec![SystemCriterion {
@@ -270,3 +697,131 @@ mod integration_*ests {
         )*
     }
 }
+=======
+    fn creates_query_request() {
+        let request = QueryRequest {
+            system_criteria: vec![SystemCriterion {
+                criterion_type: "EntityTypeId".to_string(),
+                value: "Product".to_string(),
+                operator: "Equal".to_string(),
+            }],
+            objects: None,
+        };
+
+        let json = serde_json::to_value(request).expect("Query request should serialize");
+
+        assert_eq!(json["systemCriteria"][0]["type"], "EntityTypeId");
+
+        assert_eq!(json["systemCriteria"][0]["value"], "Product");
+    }
+
+    #[test]
+    fn maps_inriver_bundle_to_product() {
+        let bundle = serde_json::json!({
+            "summary": {
+                "displayDescription": "10700103",
+                "displayName": "AZZARO Chrome Eau de toilette tester",
+                "entityTypeId": "Product",
+                "modifiedDate": "2026-08-21T08:00:00.0000000Z"
+            },
+            "linkedEntities": [
+                {
+                    "summary": {
+                        "displayDescription": "3614273962384",
+                        "displayName": "Chrome United eau de toilette 100 ml",
+                        "entityTypeId": "Item"
+                    },
+                    "fields": [
+                        {
+                            "fieldTypeId": "ItemWebname",
+                            "value": "Chrome United eau de toilette 100 ml"
+                        },
+                        {
+                            "fieldTypeId": "ItemInci",
+                            "value": "ALCOHOL, PARFUM, AQUA"
+                        },
+                        {
+                            "fieldTypeId": "ItemBodyTx",
+                            "value": {
+                                "da": "",
+                                "en": "English product description",
+                                "fi": "",
+                                "no": "",
+                                "sv": ""
+                            }
+                        },
+                        {
+                            "fieldTypeId": "ItemHowToTx",
+                            "value": {
+                                "da": "",
+                                "en": "Apply as directed",
+                                "fi": "",
+                                "no": "",
+                                "sv": ""
+                            }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        let product = map_inriver_entity(&bundle).expect("Bundle should map to Product");
+
+        assert_eq!(product.sku, "10700103");
+
+        assert_eq!(product.upc_code.as_deref(), Some("3614273962384"));
+
+        assert_eq!(product.product_name, "Chrome United eau de toilette 100 ml");
+
+        assert_eq!(product.description, "English product description");
+
+        assert_eq!(product.inci, "ALCOHOL, PARFUM, AQUA");
+
+        assert_eq!(product.directions, "Apply as directed");
+    }
+}
+
+#[cfg(test)]
+mod integration_tests {
+    use super::*;
+
+    #[tokio::test]
+    #[ignore = "requires live Inriver credentials"]
+    async fn queries_products_and_fetches_first_bundle() {
+        dotenvy::dotenv().ok();
+
+        let config = InriverConfig::from_env().expect("Missing Inriver config");
+
+        let source = InriverSource::new(config).expect("Could not create Inriver source");
+
+        let result = source.query_products().await.expect("Query failed");
+
+        println!("Found {} products", result.count);
+
+        let first_id = result
+            .entity_ids
+            .first()
+            .copied()
+            .expect("No entity IDs returned");
+
+        println!("Using entity ID {first_id}");
+
+        let bundle = source
+            .get_entity_bundle(first_id)
+            .await
+            .expect("Bundle request failed");
+
+        println!(
+            "{}",
+            serde_json::to_string_pretty(&bundle).expect("Bundle should serialize")
+        );
+
+        let product = map_inriver_entity(&bundle).expect("Bundle should map to Product");
+
+        println!(
+            "Mapped product:\n{}",
+            serde_json::to_string_pretty(&product).expect("Product should serialize")
+        );
+    }
+}
+>>>>>>> 4bda541 (Initial Inriver integration working)

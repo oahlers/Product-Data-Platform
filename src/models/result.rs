@@ -9,9 +9,12 @@ pub struct ModuleResult {
     pub findings: Vec<String>,
 
     #[serde(default)]
+<<<<<<< HEAD
     pub recommendations: Vec<String>,
 
     #[serde(default)]
+=======
+>>>>>>> 4bda541 (Initial Inriver integration working)
     pub provider: String,
 
     #[serde(default)]

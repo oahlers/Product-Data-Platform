@@ -28,21 +28,10 @@ async fn health() -> Json<serde_json::Value> {
     Json(json!({"status": "ok"}))
 }
 
-async fn products(
-    State(state): State<Arc<AppState>>
-) -> impl IntoResponse {
+async fn products(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    let products: Vec<_> = state.product_cache.values().cloned().collect();
 
-    let products: Vec<_> =
-        state
-            .product_cache
-            .values()
-            .cloned()
-            .collect();
-
-    (
-        StatusCode::OK,
-        Json(json!(products))
-    )
+    (StatusCode::OK, Json(json!(products)))
 }
 
 async fn process_all(State(state): State<Arc<AppState>>) -> impl IntoResponse {
@@ -66,10 +55,7 @@ async fn process_sku(
     }
 }
 
-async fn result(
-    State(state): State<Arc<AppState>>,
-    Path(sku): Path<String>,
-) -> impl IntoResponse {
+async fn result(State(state): State<Arc<AppState>>, Path(sku): Path<String>) -> impl IntoResponse {
     match state.result_store.result(&sku).await {
         Ok(Some(result)) => (StatusCode::OK, Json(json!(result))),
         Ok(None) => (

@@ -4,15 +4,13 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+use async_trait::async_trait;
 use calamine::{open_workbook_auto, Data, Reader};
 use chrono::Utc;
 use tokio::task;
 use tracing::{info, warn};
 
-use async_trait::async_trait;
-
 use super::product_source::ProductSource;
-
 use crate::models::product::Product;
 
 #[derive(Clone)]
@@ -34,7 +32,6 @@ impl ExcelStore {
             .await
             .context("Excel reader task failed")?
     }
-    
 
     pub async fn product(&self, sku: &str) -> Result<Option<Product>> {
         Ok(self
@@ -47,10 +44,7 @@ impl ExcelStore {
 
 fn load_directory(directory: &Path) -> Result<Vec<Product>> {
     if !directory.exists() {
-        anyhow::bail!(
-            "Excel directory does not exist: {}",
-            directory.display()
-        );
+        anyhow::bail!("Excel directory does not exist: {}", directory.display());
     }
 
     let mut products = Vec::new();
@@ -69,8 +63,10 @@ fn load_directory(directory: &Path) -> Result<Vec<Product>> {
                     count = workbook_products.len(),
                     "Excel workbook loaded"
                 );
+
                 products.append(&mut workbook_products);
             }
+
             Err(error) => {
                 warn!(
                     file = %path.display(),
@@ -83,17 +79,14 @@ fn load_directory(directory: &Path) -> Result<Vec<Product>> {
 
     deduplicate_products(&mut products);
 
-    info!(
-        count = products.len(),
-        "Excel product ingestion completed"
-    );
+    info!(count = products.len(), "Excel product ingestion completed");
 
     Ok(products)
 }
 
 fn load_workbook(path: &Path) -> Result<Vec<Product>> {
-    let mut workbook = open_workbook_auto(path)
-        .with_context(|| format!("Cannot open {}", path.display()))?;
+    let mut workbook =
+        open_workbook_auto(path).with_context(|| format!("Cannot open {}", path.display()))?;
 
     let sheet_names = workbook.sheet_names().to_owned();
     let fallback_brand = brand_from_filename(path);
@@ -102,12 +95,14 @@ fn load_workbook(path: &Path) -> Result<Vec<Product>> {
     for sheet_name in sheet_names {
         let range = match workbook.worksheet_range(&sheet_name) {
             Ok(range) => range,
+
             Err(error) => {
                 warn!(
                     sheet = %sheet_name,
                     %error,
                     "Worksheet could not be read"
                 );
+
                 continue;
             }
         };
@@ -134,37 +129,29 @@ fn load_workbook(path: &Path) -> Result<Vec<Product>> {
 }
 
 fn find_header_row(rows: &[Vec<String>]) -> Option<usize> {
-    rows.iter()
-        .take(100)
-        .enumerate()
-        .find_map(|(index, row)| {
-            let normalized: Vec<String> =
-                row.iter().map(|value| normalize(value)).collect();
+    rows.iter().take(100).enumerate().find_map(|(index, row)| {
+        let normalized: Vec<String> = row.iter().map(|value| normalize(value)).collect();
 
-            let has_sku = normalized.iter().any(|value| {
-                matches!(
-                    value.as_str(),
-                    "sku"
-                        | "kendo sku"
-                        | "item number"
-                        | "reference-no"
-                        | "reference no"
-                )
-            });
+        let has_sku = normalized.iter().any(|value| {
+            matches!(
+                value.as_str(),
+                "sku" | "kendo sku" | "item number" | "reference-no" | "reference no"
+            )
+        });
 
-            let has_product_name = normalized.iter().any(|value| {
-                matches!(
-                    value.as_str(),
-                    "product name/ short description"
-                        | "product name / short description"
-                        | "item description"
-                        | "description"
-                        | "product name"
-                )
-            });
+        let has_product_name = normalized.iter().any(|value| {
+            matches!(
+                value.as_str(),
+                "product name/ short description"
+                    | "product name / short description"
+                    | "item description"
+                    | "description"
+                    | "product name"
+            )
+        });
 
-            (has_sku && has_product_name).then_some(index)
-        })
+        (has_sku && has_product_name).then_some(index)
+    })
 }
 
 fn build_header_map(headers: &[String]) -> HashMap<String, usize> {
@@ -173,6 +160,7 @@ fn build_header_map(headers: &[String]) -> HashMap<String, usize> {
         .enumerate()
         .filter_map(|(index, header)| {
             let normalized = normalize(header);
+
             (!normalized.is_empty()).then_some((normalized, index))
         })
         .collect()
@@ -199,21 +187,16 @@ fn map_row(
         return None;
     }
 
+    let upc_code = parse_optional_string(first_value(
+        row,
+        headers,
+        &["upc code", "upc", "ean", "ean code", "gtin", "barcode"],
+    ));
+
     let brand = value_or_fallback(
         first_value(row, headers, &["brand name", "brand"]),
         fallback_brand,
     );
-
-    fn normalize_optional_text(value: String) -> String {
-    match value.trim().to_lowercase().as_str() {
-        "" => String::new(),
-        "false" => String::new(),
-        "n/a" => String::new(),
-        "na" => String::new(),
-        "-" => String::new(),
-        _ => value.trim().to_string(),
-    }
-}
 
     let product_name = first_value(
         row,
@@ -227,7 +210,7 @@ fn map_row(
         ],
     );
 
-    let description = first_value(
+    let description = normalize_optional_text(first_value(
         row,
         headers,
         &[
@@ -236,34 +219,27 @@ fn map_row(
             "trade item description long description-en_gb-sephora",
             "sephora product long description-en_gb",
         ],
-    );
+    ));
 
-    let marketing_text = first_value(
+    let marketing_text = normalize_optional_text(first_value(
         row,
         headers,
         &["marketing message", "trade item marketing message-en_gb"],
-    );
+    ));
 
-    let inci = first_value(
+    let inci = normalize_optional_text(first_value(
         row,
         headers,
         &["ingredients list", "ingredient statement-en_gb", "inci"],
-    );
+    ));
 
-    let warnings = normalize_optional_text(
-     first_value(
-            row,
-            headers,
-         &[
-                "precaution of use",
-                "precautions",
-                "warnings",
-            ],
-      )
-);
+    let warnings = normalize_optional_text(first_value(
+        row,
+        headers,
+        &["precaution of use", "precautions", "warnings"],
+    ));
 
-    let directions = normalize_optional_text(
-    first_value(
+    let directions = normalize_optional_text(first_value(
         row,
         headers,
         &[
@@ -272,11 +248,233 @@ fn map_row(
             "directions",
             "directions for use",
         ],
-    )
-);
+    ));
+
+    let net_weight_g = parse_number(first_value(
+        row,
+        headers,
+        &["net weight (g)", "net weight", "net_weight"],
+    ));
+
+    let gross_weight_g = parse_number(first_value(
+        row,
+        headers,
+        &[
+            "gross weight(g)",
+            "gross weight (g)",
+            "gross weight",
+            "gross_weight",
+        ],
+    ));
+
+    let width_mm = parse_number(first_value(
+        row,
+        headers,
+        &[
+            "primary width (mm)",
+            "item width (mm)",
+            "width (mm)",
+            "width",
+        ],
+    ));
+
+    let depth_mm = parse_number(first_value(
+        row,
+        headers,
+        &[
+            "primary depth (mm)",
+            "item depth (mm)",
+            "item length (mm)",
+            "item lenght (mm)",
+            "depth (mm)",
+            "depth",
+        ],
+    ));
+
+    let height_mm = parse_number(first_value(
+        row,
+        headers,
+        &[
+            "primary height (mm)",
+            "item height (mm)",
+            "height (mm)",
+            "height",
+        ],
+    ));
+
+    let primary_volume_mm3 = calculate_volume(width_mm, depth_mm, height_mm);
+
+    let secondary_width_mm = parse_number(first_value(
+        row,
+        headers,
+        &["secondary width (mm)", "s. item width (mm)"],
+    ));
+
+    let secondary_depth_mm = parse_number(first_value(
+        row,
+        headers,
+        &[
+            "secondary depth (mm)",
+            "secondary length (mm)",
+            "s. item length (mm)",
+        ],
+    ));
+
+    let secondary_height_mm = parse_number(first_value(
+        row,
+        headers,
+        &["secondary height (mm)", "s. item height (mm)"],
+    ));
+
+    let secondary_volume_mm3 =
+        calculate_volume(secondary_width_mm, secondary_depth_mm, secondary_height_mm);
+
+    let piece_weight_g = gross_weight_g;
+
+    let items_per_prepack = parse_u32(first_value(
+        row,
+        headers,
+        &["items per pre-pack", "items per prepack"],
+    ));
+
+    let prepacks_per_shipper = parse_u32(first_value(
+        row,
+        headers,
+        &["pre-packs per shipper", "prepacks per shipper"],
+    ));
+
+    let items_per_shipper = parse_u32(first_value(row, headers, &["items per shipper"]));
+
+    let shipper_width_mm = parse_number(first_value(
+        row,
+        headers,
+        &["shipper width (mm)", "case width (mm)"],
+    ));
+
+    let shipper_depth_mm = parse_number(first_value(
+        row,
+        headers,
+        &[
+            "shipper depth (mm)",
+            "shipper length (mm)",
+            "case depth (mm)",
+            "case length (mm)",
+        ],
+    ));
+
+    let shipper_height_mm = parse_number(first_value(
+        row,
+        headers,
+        &["shipper height (mm)", "case height (mm)"],
+    ));
+
+    let shipper_weight_g = parse_number(first_value(
+        row,
+        headers,
+        &["shipper weight (g)", "case weight (g)"],
+    ));
+
+    let shipper_volume_mm3 =
+        calculate_volume(shipper_width_mm, shipper_depth_mm, shipper_height_mm);
+
+    let case_weight_g = parse_number(first_value(
+        row,
+        headers,
+        &["case weight (g)", "case weight"],
+    ));
+
+    let carton_weight_g = parse_number(first_value(
+        row,
+        headers,
+        &["carton weight (g)", "carton weight"],
+    ));
+
+    let pieces_per_case = parse_u32(first_value(
+        row,
+        headers,
+        &["pieces per case", "items per case"],
+    ));
+
+    let cases_per_carton = parse_u32(first_value(row, headers, &["cases per carton"]));
+
+    let shippers_per_pallet = parse_u32(first_value(
+        row,
+        headers,
+        &["shipper per pallet", "shippers per pallet"],
+    ));
+
+    let items_per_pallet = parse_u32(first_value(row, headers, &["items per pallet"]));
+
+    let pallet_height_mm = parse_number(first_value(
+        row,
+        headers,
+        &["pallet height (mm)", "pallet height"],
+    ));
+
+    let pallet_weight_g = parse_number(first_value(
+        row,
+        headers,
+        &["pallet weight (g)", "pallet weight"],
+    ));
+
+    let pallet_gtin = parse_optional_string(first_value(
+        row,
+        headers,
+        &["pallet gtin", "pallet barcode"],
+    ));
+
+    let cube = parse_number(first_value(row, headers, &["cube"]));
+
+    let interspace_percent = parse_number(first_value(
+        row,
+        headers,
+        &["interspace %", "interspace percent"],
+    ));
+
+    let packaging_material_layers = parse_u32(first_value(
+        row,
+        headers,
+        &[
+            "packaging material layers",
+            "packaging material layers *not pallet",
+        ],
+    ));
+
+    let paper_cardboard_g = parse_number(first_value(
+        row,
+        headers,
+        &[
+            "paper/cardboard (grams)",
+            "paper / cardboard (grams)",
+            "paper cardboard (grams)",
+        ],
+    ));
+
+    let glass_g = parse_number(first_value(row, headers, &["glass (grams)"]));
+
+    let textiles_wood_g = parse_number(first_value(
+        row,
+        headers,
+        &[
+            "textiles/wood (grams)",
+            "textiles / wood (grams)",
+            "textiles wood (grams)",
+        ],
+    ));
+
+    let tinplate_g = parse_number(first_value(row, headers, &["tinplate (grams)"]));
+
+    let aluminium_g = parse_number(first_value(
+        row,
+        headers,
+        &["aluminium (grams)", "aluminum (grams)"],
+    ));
+
+    let plastic_g = parse_number(first_value(row, headers, &["plastic (grams)"]));
 
     Some(Product {
         sku,
+        upc_code,
         brand,
         product_name,
         description,
@@ -284,56 +482,48 @@ fn map_row(
         inci,
         warnings,
         directions,
-        net_weight_g: parse_number(first_value(
-            row,
-            headers,
-            &["net weight (g)", "net weight", "net_weight"],
-        )),
-        gross_weight_g: parse_number(first_value(
-            row,
-            headers,
-            &["gross weight(g)", "gross weight", "gross_weight"],
-        )),
-        width_mm: parse_number(first_value(
-            row,
-            headers,
-            &[
-                "primary width (mm)",
-                "secondary width (mm)",
-                "item width (m)",
-                "width",
-            ],
-        )),
-        depth_mm: parse_number(first_value(
-            row,
-            headers,
-            &[
-                "primary depth (mm)",
-                "secondary depth (mm)",
-                "item lenght (m)",
-                "item length (m)",
-                "depth",
-            ],
-        )),
-        height_mm: parse_number(first_value(
-            row,
-            headers,
-            &[
-                "primary height (mm)",
-                "secondary height (mm)",
-                "item height (m)",
-                "height",
-            ],
-        )),
+        width_mm,
+        depth_mm,
+        height_mm,
+        primary_volume_mm3,
+        secondary_width_mm,
+        secondary_depth_mm,
+        secondary_height_mm,
+        secondary_volume_mm3,
+        net_weight_g,
+        gross_weight_g,
+        piece_weight_g,
+        items_per_prepack,
+        prepacks_per_shipper,
+        items_per_shipper,
+        shipper_width_mm,
+        shipper_depth_mm,
+        shipper_height_mm,
+        shipper_weight_g,
+        shipper_volume_mm3,
+        case_weight_g,
+        carton_weight_g,
+        pieces_per_case,
+        cases_per_carton,
+        shippers_per_pallet,
+        items_per_pallet,
+        pallet_height_mm,
+        pallet_weight_g,
+        pallet_gtin,
+        cube,
+        interspace_percent,
+        packaging_material_layers,
+        paper_cardboard_g,
+        glass_g,
+        textiles_wood_g,
+        tinplate_g,
+        aluminium_g,
+        plastic_g,
         modified_at: Utc::now(),
     })
 }
 
-fn first_value(
-    row: &[String],
-    headers: &HashMap<String, usize>,
-    aliases: &[&str],
-) -> String {
+fn first_value(row: &[String], headers: &HashMap<String, usize>, aliases: &[&str]) -> String {
     aliases
         .iter()
         .filter_map(|alias| headers.get(*alias))
@@ -353,6 +543,24 @@ fn normalize(value: &str) -> String {
         .join(" ")
 }
 
+fn normalize_optional_text(value: String) -> String {
+    match value.trim().to_lowercase().as_str() {
+        "" | "false" | "n/a" | "na" | "-" => String::new(),
+
+        _ => value.trim().to_string(),
+    }
+}
+
+fn parse_optional_string(value: String) -> Option<String> {
+    let value = normalize_optional_text(value);
+
+    if value.is_empty() {
+        None
+    } else {
+        Some(value)
+    }
+}
+
 fn parse_number(value: String) -> Option<f64> {
     let normalized = value.trim().replace(' ', "").replace(',', ".");
 
@@ -361,6 +569,28 @@ fn parse_number(value: String) -> Option<f64> {
     }
 
     normalized.parse::<f64>().ok()
+}
+
+fn parse_u32(value: String) -> Option<u32> {
+    let parsed = parse_number(value)?;
+
+    if !parsed.is_finite() || parsed < 0.0 || parsed.fract() != 0.0 || parsed > u32::MAX as f64 {
+        return None;
+    }
+
+    Some(parsed as u32)
+}
+
+fn calculate_volume(width: Option<f64>, depth: Option<f64>, height: Option<f64>) -> Option<f64> {
+    match (width, depth, height) {
+        (Some(width), Some(depth), Some(height))
+            if width >= 0.0 && depth >= 0.0 && height >= 0.0 =>
+        {
+            Some(width * depth * height)
+        }
+
+        _ => None,
+    }
 }
 
 fn value_or_fallback(value: String, fallback: &str) -> String {
@@ -394,11 +624,7 @@ fn brand_from_filename(path: &Path) -> String {
 }
 
 fn deduplicate_products(products: &mut Vec<Product>) {
-    products.sort_by(|left, right| {
-        left.sku
-            .to_lowercase()
-            .cmp(&right.sku.to_lowercase())
-    });
+    products.sort_by(|left, right| left.sku.to_lowercase().cmp(&right.sku.to_lowercase()));
 
     products.dedup_by(|left, right| left.sku.eq_ignore_ascii_case(&right.sku));
 }
@@ -406,7 +632,9 @@ fn deduplicate_products(products: &mut Vec<Product>) {
 fn cell_to_string(cell: &Data) -> String {
     match cell {
         Data::Empty => String::new(),
+
         Data::String(value) => value.trim().to_string(),
+
         Data::Float(value) => {
             if value.fract() == 0.0 {
                 format!("{value:.0}")
@@ -414,11 +642,17 @@ fn cell_to_string(cell: &Data) -> String {
                 value.to_string()
             }
         }
+
         Data::Int(value) => value.to_string(),
+
         Data::Bool(value) => value.to_string(),
+
         Data::Error(error) => format!("{error:?}"),
+
         Data::DateTime(value) => value.to_string(),
+
         Data::DateTimeIso(value) => value.clone(),
+
         Data::DurationIso(value) => value.clone(),
     }
 }
@@ -439,6 +673,24 @@ fn is_supported_excel_file(path: &Path) -> bool {
 mod tests {
     use super::*;
 
+    #[test]
+    fn parses_integer_values() {
+        assert_eq!(parse_u32("12".to_string()), Some(12));
+    }
+
+    #[test]
+    fn rejects_fractional_integer_values() {
+        assert_eq!(parse_u32("12.5".to_string()), None);
+    }
+
+    #[test]
+    fn calculates_volume_from_dimensions() {
+        assert_eq!(
+            calculate_volume(Some(10.0), Some(20.0), Some(30.0),),
+            Some(6000.0)
+        );
+    }
+
     #[tokio::test]
     async fn loads_excel_products() {
         let store = ExcelStore::new("data/excel");
@@ -457,20 +709,13 @@ mod tests {
             );
         }
 
-        assert!(
-            !products.is_empty(),
-            "No products were loaded from Excel"
-        );
+        assert!(!products.is_empty(), "No products were loaded from Excel");
     }
 }
 
-
 #[async_trait]
 impl ProductSource for ExcelStore {
-    async fn products(
-        &self,
-    ) -> anyhow::Result<Vec<Product>> {
-
+    async fn products(&self) -> anyhow::Result<Vec<Product>> {
         self.load_products().await
     }
 }
