@@ -47,8 +47,16 @@ async fn search_products(
     State(state): State<Arc<AppState>>,
     Query(query): Query<SearchQuery>,
 ) -> impl IntoResponse {
-    match state.product_source.search_products(&query.q).await {
-        Ok(products) => (StatusCode::OK, Json(json!(products))),
+
+    match state
+        .product_source
+        .search_products(&query.q)
+        .await
+    {
+        Ok(products) => (
+            StatusCode::OK,
+            Json(json!(products)),
+        ),
         Err(error) => internal_error(error),
     }
 }
