@@ -519,6 +519,14 @@ fn map_row(
         tinplate_g,
         aluminium_g,
         plastic_g,
+        alcohol_percent: None,
+        gender: None,
+
+        total_packaging_g: None,
+
+        top_notes: String::new(),
+        heart_notes: String::new(),
+        base_notes: String::new(),
         modified_at: Utc::now(),
     })
 }

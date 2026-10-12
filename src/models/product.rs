@@ -142,4 +142,22 @@ pub struct Product {
 
     #[serde(default = "Utc::now")]
     pub modified_at: DateTime<Utc>,
+
+    #[serde(default)]
+    pub alcohol_percent: Option<f64>,
+
+    #[serde(default)]
+    pub gender: Option<String>,
+
+    #[serde(default)]
+    pub total_packaging_g: Option<f64>,
+
+    #[serde(default)]
+    pub top_notes: String,
+
+    #[serde(default)]
+    pub heart_notes: String,
+
+    #[serde(default)]
+    pub base_notes: String,
 }
