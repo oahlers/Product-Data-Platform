@@ -21,6 +21,7 @@ use std::{
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenv*::dotenv().ok();
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::from_default_env()
