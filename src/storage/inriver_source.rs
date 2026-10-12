@@ -1204,3 +1204,26 @@ mod integration_tests {
         assert_eq!(modified_at.to_rfc3339(), "2026-08-21T08:00:00+00:00");
     }
 }
+
+use async_trait::async_trait;
+
+use crate::storage::product_source::ProductSource;
+
+#[async_trait]
+impl ProductSource for InriverSource {
+    async fn products(&self) -> Result<Vec<Product>> {
+        self.search_products("").await
+    }
+
+    async fn product(&self, sku: &str) -> Result<Option<Product>> {
+        self.get_product_by_sku(sku).await
+    }
+
+    async fn product_by_ean(&self, ean: &str) -> Result<Option<Product>> {
+        self.get_product_by_ean(ean).await
+    }
+
+    async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {
+        InriverSource::search_products(self, search_term).await
+    }
+}

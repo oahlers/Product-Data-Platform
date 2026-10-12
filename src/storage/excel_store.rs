@@ -737,7 +737,48 @@ mod tests {
 
 #[async_trait]
 impl ProductSource for ExcelStore {
-    async fn products(&self) -> anyhow::Result<Vec<Product>> {
+    async fn products(&self) -> Result<Vec<Product>> {
         self.load_products().await
+    }
+
+    async fn product(&self, sku: &str) -> Result<Option<Product>> {
+        Ok(self
+            .load_products()
+            .await?
+            .into_iter()
+            .find(|product| product.sku.eq_ignore_ascii_case(sku)))
+    }
+
+    async fn product_by_ean(&self, ean: &str) -> Result<Option<Product>> {
+        Ok(self
+            .load_products()
+            .await?
+            .into_iter()
+            .find(|product| product.upc_code.as_deref() == Some(ean)))
+    }
+
+    async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {
+        let search_term = search_term.trim().to_lowercase();
+
+        if search_term.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let products = self.load_products().await?;
+
+        Ok(products
+            .into_iter()
+            .filter(|product| {
+                product.sku.to_lowercase().contains(&search_term)
+                    || product.brand.to_lowercase().contains(&search_term)
+                    || product.product_name.to_lowercase().contains(&search_term)
+                    || product
+                        .upc_code
+                        .as_deref()
+                        .unwrap_or_default()
+                        .to_lowercase()
+                        .contains(&search_term)
+            })
+            .collect())
     }
 }

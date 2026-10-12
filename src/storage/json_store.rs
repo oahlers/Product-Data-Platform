@@ -64,3 +64,46 @@ impl JsonStore {
         }
     }
 }
+
+use async_trait::async_trait;
+
+use crate::storage::product_source::ProductSource;
+
+#[async_trait]
+impl ProductSource for JsonStore {
+    async fn products(&self) -> Result<Vec<Product>> {
+        JsonStore::products(self).await
+    }
+
+    async fn product(&self, sku: &str) -> Result<Option<Product>> {
+        JsonStore::product(self, sku).await
+    }
+
+    async fn product_by_ean(&self, ean: &str) -> Result<Option<Product>> {
+        let products = JsonStore::products(self).await?;
+
+        Ok(products
+            .into_iter()
+            .find(|p| p.upc_code.as_deref() == Some(ean)))
+    }
+
+    async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {
+        let term = search_term.to_lowercase();
+
+        let products = JsonStore::products(self).await?;
+
+        Ok(products
+            .into_iter()
+            .filter(|p| {
+                p.sku.to_lowercase().contains(&term)
+                    || p.brand.to_lowercase().contains(&term)
+                    || p.product_name.to_lowercase().contains(&term)
+                    || p.upc_code
+                        .as_deref()
+                        .unwrap_or("")
+                        .to_lowercase()
+                        .contains(&term)
+            })
+            .collect())
+    }
+}

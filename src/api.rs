@@ -1,21 +1,30 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
     Json, Router,
 };
+
+use serde::Deserialize;
 use serde_json::json;
+
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 use crate::{orchestrator, state::AppState};
+
+#[derive(Deserialize)]
+struct SearchQuery {
+    q: String,
+}
 
 pub fn router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/health", get(health))
         .route("/products", get(products))
+        .route("/products/search", get(search_products))
         .route("/process-all", post(process_all))
         .route("/process/{sku}", post(process_sku))
         .route("/results/{sku}", get(result))
@@ -32,6 +41,16 @@ async fn products(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     let products: Vec<_> = state.product_cache.values().cloned().collect();
 
     (StatusCode::OK, Json(json!(products)))
+}
+
+async fn search_products(
+    State(state): State<Arc<AppState>>,
+    Query(query): Query<SearchQuery>,
+) -> impl IntoResponse {
+    match state.product_source.search_products(&query.q).await {
+        Ok(products) => (StatusCode::OK, Json(json!(products))),
+        Err(error) => internal_error(error),
+    }
 }
 
 async fn process_all(State(state): State<Arc<AppState>>) -> impl IntoResponse {

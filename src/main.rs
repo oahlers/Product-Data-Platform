@@ -12,7 +12,7 @@ mod storage;
 use anyhow::Result;
 use state::AppState;
 use std::{net::SocketAddr, sync::Arc};
-use storage::{excel_store::ExcelStore, json_store::JsonStore};
+use storage::{excel_store::ExcelStore, json_store::JsonStore, product_source::ProductSource};
 use tokio::net::TcpListener;
 use tracing::info;
 
@@ -26,6 +26,8 @@ async fn main() -> Result<()> {
         .init();
 
     let product_store = Arc::new(ExcelStore::new("data/excel"));
+    let product_source: Arc<dyn ProductSource> = product_store.clone();
+
     let products = product_store.load_products().await?;
 
     println!("Loaded {} products into cache", products.len());
@@ -34,7 +36,7 @@ async fn main() -> Result<()> {
     let result_store = Arc::new(JsonStore::new("data/products.json", "results"));
     result_store.ensure_files().await?;
 
-    let state = Arc::new(AppState::new(Arc::new(cache), result_store));
+    let state = Arc::new(AppState::new(Arc::new(cache), result_store, product_source));
 
     let mut scheduler = scheduler::start(Arc::clone(&state)).await?;
     let app = api::router(state);
