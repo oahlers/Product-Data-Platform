@@ -1,5 +1,7 @@
+use std::collections::HashSet;
+
 use anyhow::{bail, Context, Result};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use reqwest::{
     header::{HeaderMap, HeaderName, HeaderValue, ACCEPT},
     Client,
@@ -69,42 +71,42 @@ impl InriverSource {
     }
 
     pub async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {
-        let search_term = search_term.trim().to_lowercase();
+        let search_term = search_term.trim();
 
         if search_term.is_empty() {
             return Ok(Vec::new());
         }
 
-        let result = self
-            .query_products_by_field("ProductName", "Contains", &search_term)
-            .await?;
+        let mut entity_ids = HashSet::new();
 
-        let mut matches = Vec::new();
+        let searchable_fields = ["ProductName", "ProductID", "ProductBrand"];
 
-        for entity_id in result.entity_ids {
+        for field_type_id in searchable_fields {
+            let result = self
+                .query_products_by_field(field_type_id, "Contains", search_term)
+                .await?;
+
+            entity_ids.extend(result.entity_ids);
+        }
+
+        let mut products = Vec::new();
+
+        for entity_id in entity_ids {
             let bundle = self.get_entity_bundle(entity_id).await?;
 
             let product = map_inriver_entity(&bundle)?;
 
-            let sku_match = product.sku.to_lowercase().contains(&search_term);
-
-            let ean_match = product
-                .upc_code
-                .as_deref()
-                .unwrap_or_default()
-                .to_lowercase()
-                .contains(&search_term);
-
-            let brand_match = product.brand.to_lowercase().contains(&search_term);
-
-            let name_match = product.product_name.to_lowercase().contains(&search_term);
-
-            if sku_match || ean_match || brand_match || name_match {
-                matches.push(product);
-            }
+            products.push(product);
         }
 
-        Ok(matches)
+        products.sort_by(|left, right| {
+            left.product_name
+                .to_lowercase()
+                .cmp(&right.product_name.to_lowercase())
+                .then_with(|| left.sku.cmp(&right.sku))
+        });
+
+        Ok(products)
     }
 
     pub async fn query_products(&self) -> Result<QueryResponse> {
@@ -855,9 +857,13 @@ fn calculate_volume(
 fn parse_modified_at(summary: &Value) -> Option<DateTime<Utc>> {
     let value = summary.get("modifiedDate").and_then(Value::as_str)?;
 
-    DateTime::parse_from_rfc3339(value)
-        .map(|date| date.with_timezone(&Utc))
-        .ok()
+    if let Ok(date) = DateTime::parse_from_rfc3339(value) {
+        return Some(date.with_timezone(&Utc));
+    }
+
+    let naive = NaiveDateTime::parse_from_str(value, "%Y-%m-%dT%H:%M:%S%.f").ok()?;
+
+    Some(DateTime::<Utc>::from_naive_utc_and_offset(naive, Utc))
 }
 
 #[cfg(test)]
@@ -1154,6 +1160,12 @@ mod integration_tests {
 
         assert!(!products.is_empty());
 
+        assert!(products.iter().all(|product| {
+            product.product_name.to_lowercase().contains("chrome")
+                || product.brand.to_lowercase().contains("chrome")
+                || product.sku.to_lowercase().contains("chrome")
+        }));
+
         println!("{}", serde_json::to_string_pretty(&products).unwrap());
     }
 
@@ -1179,5 +1191,16 @@ mod integration_tests {
             !result.entity_ids.is_empty(),
             "No Chrome products were returned"
         );
+    }
+
+    #[test]
+    fn parses_inriver_modified_date_without_timezone() {
+        let summary = serde_json::json!({
+            "modifiedDate": "2026-08-21T08:00:00.0000000"
+        });
+
+        let modified_at = parse_modified_at(&summary).expect("Modified date should parse");
+
+        assert_eq!(modified_at.to_rfc3339(), "2026-08-21T08:00:00+00:00");
     }
 }
