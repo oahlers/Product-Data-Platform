@@ -646,7 +646,7 @@ fn brand_from_filename(path: &Path) -> String {
 }
 
 fn deduplicate_products(products: &mut Vec<Product>) {
-    products.sort_by(|left, right| left.sku.to_lowercase().cmp(&right.sku.to_lowercase()));
+    products.sort_by_key(|p| p.sku.to_lowercase());
 
     products.dedup_by(|left, right| left.sku.eq_ignore_ascii_case(&right.sku));
 }

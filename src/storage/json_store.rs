@@ -37,7 +37,7 @@ impl JsonStore {
         let bytes = fs::read(&self.products_path)
             .await
             .context("read products.json")?;
-        Ok(serde_json::from_slice(&bytes).context("parse products.json")?)
+        serde_json::from_slice(&bytes).context("parse products.json")
     }
 
     pub async fn product(&self, sku: &str) -> Result<Option<Product>> {

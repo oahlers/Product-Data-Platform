@@ -169,6 +169,38 @@ impl InriverSource {
         map_inriver_entity(&bundle)
     }
 
+    pub async fn get_product_by_sku(&self, sku: &str) -> Result<Option<Product>> {
+        let result = self.query_products().await?;
+
+        for entity_id in result.entity_ids {
+            let bundle = self.get_entity_bundle(entity_id).await?;
+
+            let product = map_inriver_entity(&bundle)?;
+
+            if product.sku == sku {
+                return Ok(Some(product));
+            }
+        }
+
+        Ok(None)
+    }
+
+    pub async fn get_product_by_ean(&self, ean: &str) -> Result<Option<Product>> {
+        let result = self.query_products().await?;
+
+        for entity_id in result.entity_ids {
+            let bundle = self.get_entity_bundle(entity_id).await?;
+
+            let product = map_inriver_entity(&bundle)?;
+
+            if product.upc_code.as_deref() == Some(ean) {
+                return Ok(Some(product));
+            }
+        }
+
+        Ok(None)
+    }
+
     async fn get_json(&self, url: &str) -> Result<Value> {
         let response = self
             .client
@@ -960,5 +992,43 @@ mod integration_tests {
             "Mapped product:\n{}",
             serde_json::to_string_pretty(&product,).expect("Product should serialize",)
         );
+    }
+
+    #[tokio::test]
+    #[ignore = "requires live Inriver credentials"]
+    async fn finds_product_by_sku() {
+        dotenvy::dotenv().ok();
+
+        let config = InriverConfig::from_env().expect("Missing config");
+
+        let source = InriverSource::new(config).expect("Source");
+
+        let product = source
+            .get_product_by_sku("10700103")
+            .await
+            .expect("Lookup failed");
+
+        assert!(product.is_some());
+
+        println!("{}", serde_json::to_string_pretty(&product).unwrap());
+    }
+
+    #[tokio::test]
+    #[ignore = "requires live Inriver credentials"]
+    async fn finds_product_by_ean() {
+        dotenvy::dotenv().ok();
+
+        let config = InriverConfig::from_env().expect("Missing config");
+
+        let source = InriverSource::new(config).expect("Source");
+
+        let product = source
+            .get_product_by_ean("3351500020409")
+            .await
+            .expect("Lookup failed");
+
+        assert!(product.is_some());
+
+        println!("{}", serde_json::to_string_pretty(&product).unwrap());
     }
 }
