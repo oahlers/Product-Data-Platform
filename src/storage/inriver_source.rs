@@ -192,6 +192,36 @@ impl InriverSource {
         Ok(None)
     }
 
+    pub async fn search_products_by_term(&self, search_term: &str) -> Result<Vec<Product>> {
+        use futures::{stream, StreamExt, TryStreamExt};
+
+        let result = self
+            .query_products_by_field("ProductName", "Contains", search_term)
+            .await?;
+
+        let concurrency = self.config.max_concurrent_imports;
+
+        let source = self.clone();
+
+        let products = stream::iter(result.entity_ids)
+            .map(move |entity_id| {
+                let source = source.clone();
+
+                async move {
+                    let bundle = source.get_entity_bundle(entity_id).await?;
+
+                    let product = map_inriver_entity(&bundle)?;
+
+                    Ok::<Product, anyhow::Error>(product)
+                }
+            })
+            .buffer_unordered(concurrency)
+            .try_collect::<Vec<Product>>()
+            .await?;
+
+        Ok(products)
+    }
+
     async fn get_json(&self, url: &str) -> Result<Value> {
         const MAX_ATTEMPTS: u32 = 3;
 
@@ -1147,7 +1177,7 @@ mod integration_tests {
         let source = InriverSource::new(config).expect("Source");
 
         let products = source
-            .search_products("chrome")
+            .search_products_by_term("chrome")
             .await
             .expect("Search failed");
 
@@ -1214,7 +1244,9 @@ impl ProductSource for InriverSource {
         let result = self.query_products().await?;
 
         let entity_count = result.entity_ids.len();
+
         let concurrency = self.config.max_concurrent_imports;
+
         let source = self.clone();
 
         tracing::info!(
@@ -1258,7 +1290,9 @@ impl ProductSource for InriverSource {
         let result = self.query_modified_products(modified_since).await?;
 
         let entity_count = result.entity_ids.len();
+
         let concurrency = self.config.max_concurrent_imports;
+
         let source = self.clone();
 
         tracing::info!(
@@ -1309,6 +1343,6 @@ impl ProductSource for InriverSource {
     }
 
     async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {
-        InriverSource::search_products(self, search_term).await
+        self.search_products_by_term(search_term).await
     }
 }
