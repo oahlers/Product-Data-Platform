@@ -54,11 +54,13 @@ async fn process_product_with_golden_record(
         agents::translation::run(&product)
     );
 
-    let unified_findings = agents::validator::validate_unified(&unified);
+    let unified_validation = agents::validator::validate_unified(&unified);
 
-    validation.findings.extend(unified_findings);
+    validation.findings.extend(unified_validation.findings);
 
-    if !validation.findings.is_empty() && validation.status == "PASS" {
+    if unified_validation.status == "FAIL" {
+        validation.status = "FAIL".into();
+    } else if unified_validation.status == "WARNING" && validation.status == "PASS" {
         validation.status = "WARNING".into();
     }
 

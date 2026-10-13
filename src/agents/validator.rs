@@ -4,7 +4,7 @@ use crate::{
         prompt_loader,
     },
     models::{product::Product, result::ModuleResult, unified_product::UnifiedProduct},
-    rules::engine,
+    rules::{engine, result::Severity},
 };
 
 pub async fn run(product: &Product) -> ModuleResult {
@@ -15,14 +15,30 @@ pub async fn run(product: &Product) -> ModuleResult {
     //
     let rule_findings = engine::validate_product(product);
 
+    let has_errors = rule_findings
+        .iter()
+        .any(|finding| matches!(finding.severity, Severity::Error));
+
+    let has_warnings = rule_findings
+        .iter()
+        .any(|finding| matches!(finding.severity, Severity::Warning));
+
     for finding in rule_findings {
-        findings.push(format!("[{}] {}", finding.rule_id, finding.message));
+        let severity = match finding.severity {
+            Severity::Error => "ERROR",
+            Severity::Warning => "WARNING",
+        };
+
+        findings.push(format!(
+            "[{}][{}] {}",
+            severity, finding.rule_id, finding.message
+        ));
     }
 
     //
     // Existing AI validation
     //
-    let prompt = prompt_loader::load("validator.txt").unwrap_or_default();
+    let prompt = prompt_loader::load("product_validator.txt").unwrap_or_default();
 
     let input = format!(
         "
@@ -61,21 +77,27 @@ INCI:
 
     match client.execute(&prompt, &input).await {
         Ok(response) => {
-            findings.push(response);
+            if !response.trim().is_empty() {
+                findings.push(response);
+            }
+
+            let status = if has_errors {
+                "FAIL"
+            } else if has_warnings {
+                "WARNING"
+            } else {
+                "PASS"
+            };
 
             ModuleResult {
-                status: if findings.is_empty() {
-                    "PASS".into()
-                } else {
-                    "WARNING".into()
-                },
+                status: status.into(),
                 findings,
                 provider: "rules+mock".into(),
             }
         }
 
         Err(error) => {
-            findings.push(error.to_string());
+            findings.push(format!("AI validation failed: {}", error));
 
             ModuleResult {
                 status: "FAIL".into(),
@@ -86,9 +108,40 @@ INCI:
     }
 }
 
-pub fn validate_unified(product: &UnifiedProduct) -> Vec<String> {
-    crate::rules::unified::validate(product)
+pub fn validate_unified(product: &UnifiedProduct) -> ModuleResult {
+    let rule_findings = crate::rules::unified::validate(product);
+
+    let has_errors = rule_findings
+        .iter()
+        .any(|finding| matches!(finding.severity, Severity::Error));
+
+    let has_warnings = rule_findings
+        .iter()
+        .any(|finding| matches!(finding.severity, Severity::Warning));
+
+    let findings = rule_findings
         .into_iter()
-        .map(|finding| format!("[{}] {}", finding.rule_id, finding.message))
-        .collect()
+        .map(|finding| {
+            let severity = match finding.severity {
+                Severity::Error => "ERROR",
+                Severity::Warning => "WARNING",
+            };
+
+            format!("[{}][{}] {}", severity, finding.rule_id, finding.message)
+        })
+        .collect();
+
+    let status = if has_errors {
+        "FAIL"
+    } else if has_warnings {
+        "WARNING"
+    } else {
+        "PASS"
+    };
+
+    ModuleResult {
+        status: status.into(),
+        findings,
+        provider: "unified-rules".into(),
+    }
 }
