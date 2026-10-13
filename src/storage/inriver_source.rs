@@ -182,11 +182,15 @@ impl InriverSource {
         for entity_id in result.entity_ids {
             let bundle = self.get_entity_bundle(entity_id).await?;
 
-            let product = map_inriver_entity(&bundle)?;
+            let matching_item = find_linked_item_by_ean(&bundle, ean);
 
-            if product.upc_code.as_deref() == Some(ean) {
-                return Ok(Some(product));
+            if matching_item.is_none() {
+                continue;
             }
+
+            let product = map_inriver_entity_with_item_ean(&bundle, Some(ean))?;
+
+            return Ok(Some(product));
         }
 
         Ok(None)
@@ -354,11 +358,25 @@ fn retry_delay_seconds(headers: &HeaderMap, attempt: u32) -> u64 {
 }
 
 pub fn map_inriver_entity(json: &Value) -> Result<Product> {
+    map_inriver_entity_with_item_ean(json, None)
+}
+
+fn map_inriver_entity_with_item_ean(json: &Value, requested_ean: Option<&str>) -> Result<Product> {
     let summary = json
         .get("summary")
         .context("Inriver bundle is missing root summary")?;
 
-    let linked_item = find_linked_entity(json, "Item");
+    let linked_item = match requested_ean {
+        Some(ean) => find_linked_item_by_ean(json, ean),
+        None => find_linked_entity(json, "Item"),
+    };
+
+    if requested_ean.is_some() && linked_item.is_none() {
+        bail!(
+            "No linked Item matched EAN {}",
+            requested_ean.unwrap_or_default()
+        );
+    }
 
     let linked_item_summary = linked_item.and_then(|entity| entity.get("summary"));
 
@@ -754,6 +772,56 @@ fn find_linked_entity<'a>(value: &'a Value, entity_type_id: &str) -> Option<&'a 
     }
 }
 
+fn find_linked_item_by_ean<'a>(value: &'a Value, requested_ean: &str) -> Option<&'a Value> {
+    match value {
+        Value::Object(object) => {
+            let is_item = object
+                .get("summary")
+                .and_then(|summary| summary.get("entityTypeId"))
+                .and_then(Value::as_str)
+                == Some("Item");
+
+            if is_item {
+                let mut fields = Vec::new();
+
+                if let Some(item_fields) = object.get("fields") {
+                    collect_fields(item_fields, &mut fields);
+                }
+
+                let item_ean = field_string(&fields, "ItemEAN");
+
+                let summary_ean = object
+                    .get("summary")
+                    .and_then(|summary| non_empty_string(summary, "displayDescription"));
+
+                if item_ean == requested_ean || summary_ean.as_deref() == Some(requested_ean) {
+                    return Some(value);
+                }
+            }
+
+            for child in object.values() {
+                if let Some(item) = find_linked_item_by_ean(child, requested_ean) {
+                    return Some(item);
+                }
+            }
+
+            None
+        }
+
+        Value::Array(values) => {
+            for child in values {
+                if let Some(item) = find_linked_item_by_ean(child, requested_ean) {
+                    return Some(item);
+                }
+            }
+
+            None
+        }
+
+        _ => None,
+    }
+}
+
 fn field<'a>(fields: &[&'a Value], field_type_id: &str) -> Option<&'a Value> {
     fields
         .iter()
@@ -1066,6 +1134,91 @@ mod tests {
         assert_eq!(product.plastic_g, Some(17.99));
 
         assert_eq!(product.tinplate_g, Some(2.21));
+    }
+
+    #[test]
+    fn maps_requested_linked_item_by_ean() {
+        let bundle = serde_json::json!({
+            "summary": {
+                "displayDescription": "PRODUCT-123",
+                "displayName": "Test Product",
+                "entityTypeId": "Product",
+                "modifiedDate": "2026-08-21T08:00:00Z"
+            },
+            "linkedEntities": [
+                {
+                    "summary": {
+                        "displayDescription": "1111111111111",
+                        "displayName": "Item A",
+                        "entityTypeId": "Item"
+                    },
+                    "fields": [
+                        {
+                            "fieldTypeId": "ItemEAN",
+                            "value": "1111111111111"
+                        },
+                        {
+                            "fieldTypeId": "ItemWebname",
+                            "value": "Item A"
+                        },
+                        {
+                            "fieldTypeId": "ItemWidth",
+                            "value": "1"
+                        },
+                        {
+                            "fieldTypeId": "ItemLength",
+                            "value": "2"
+                        },
+                        {
+                            "fieldTypeId": "ItemHeight",
+                            "value": "3"
+                        }
+                    ]
+                },
+                {
+                    "summary": {
+                        "displayDescription": "2222222222222",
+                        "displayName": "Item B",
+                        "entityTypeId": "Item"
+                    },
+                    "fields": [
+                        {
+                            "fieldTypeId": "ItemEAN",
+                            "value": "2222222222222"
+                        },
+                        {
+                            "fieldTypeId": "ItemWebname",
+                            "value": "Item B"
+                        },
+                        {
+                            "fieldTypeId": "ItemWidth",
+                            "value": "4"
+                        },
+                        {
+                            "fieldTypeId": "ItemLength",
+                            "value": "5"
+                        },
+                        {
+                            "fieldTypeId": "ItemHeight",
+                            "value": "6"
+                        }
+                    ]
+                }
+            ]
+        });
+
+        let product = map_inriver_entity_with_item_ean(&bundle, Some("2222222222222"))
+            .expect("Requested Item should map");
+
+        assert_eq!(product.upc_code.as_deref(), Some("2222222222222"));
+
+        assert_eq!(product.product_name, "Item B");
+
+        assert_eq!(product.width_mm, Some(40.0));
+
+        assert_eq!(product.depth_mm, Some(50.0));
+
+        assert_eq!(product.height_mm, Some(60.0));
     }
 
     #[test]
