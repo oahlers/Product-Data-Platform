@@ -43,6 +43,10 @@ curl http://localhost:3000/results/DEMO-001
 
 This deliberately avoids Excel writes in the first MVP. Replace `JsonStore` with a SharePoint/Graph source and Azure SQL repository later without changing the orchestrator or API contract.
 
+## Inriver import
+
+Inriver products are fetched concurrently to avoid waiting on each entity request in turn. The default concurrency is 32; set `INRIVER_IMPORT_CONCURRENCY` to a positive integer to tune it for your Inriver rate limits. Lower the value if the API responds with rate-limit errors.
+
 ## Agent modules
 
 The MVP contains deterministic local implementations for:

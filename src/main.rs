@@ -3,10 +3,12 @@ mod ai;
 mod api;
 mod models;
 mod orchestrator;
+mod rules;
 mod scheduler;
 mod state;
 mod status_engine;
 mod storage;
+mod validation;
 
 use anyhow::Result;
 use state::AppState;
@@ -39,7 +41,11 @@ async fn main() -> Result<()> {
 
     result_store.ensure_files().await?;
 
-    let state = Arc::new(AppState::new(result_store, product_source));
+    use ai::config::AiConfig;
+
+    let ai_config = Arc::new(AiConfig::from_env());
+
+    let state = Arc::new(AppState::new(result_store, product_source, ai_config));
 
     let mut scheduler = scheduler::start(Arc::clone(&state)).await?;
     let app = api::router(state);

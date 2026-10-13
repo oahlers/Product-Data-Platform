@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+futures = "0.3"
 dotenvy = "0.15"
 anyhow = "1"
 async-trait = "0.1"

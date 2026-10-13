@@ -28,6 +28,7 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/products/sku/{sku}", get(product_by_sku))
         .route("/products/ean/{ean}", get(product_by_ean))
         .route("/process-all", post(process_all))
+        .route("/process-modified", post(process_modified))
         .route("/process/{sku}", post(process_sku))
         .route("/results/{sku}", get(result))
         .layer(TraceLayer::new_for_http())
@@ -96,6 +97,13 @@ async fn product_by_ean(
 
 async fn process_all(State(state): State<Arc<AppState>>) -> impl IntoResponse {
     match orchestrator::process_all(state).await {
+        Ok(results) => (StatusCode::OK, Json(json!(results))),
+        Err(error) => internal_error(error),
+    }
+}
+
+async fn process_modified(State(state): State<Arc<AppState>>) -> impl IntoResponse {
+    match orchestrator::process_modified(state).await {
         Ok(results) => (StatusCode::OK, Json(json!(results))),
         Err(error) => internal_error(error),
     }

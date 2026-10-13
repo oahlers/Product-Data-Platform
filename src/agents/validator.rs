@@ -4,9 +4,24 @@ use crate::{
         prompt_loader,
     },
     models::{product::Product, result::ModuleResult},
+    rules::engine,
 };
 
 pub async fn run(product: &Product) -> ModuleResult {
+    let mut findings = Vec::new();
+
+    //
+    // Deterministic rule engine
+    //
+    let rule_findings = engine::validate_product(product);
+
+    for finding in rule_findings {
+        findings.push(format!("[{}] {}", finding.rule_id, finding.message));
+    }
+
+    //
+    // Existing AI validation
+    //
     let prompt = prompt_loader::load("validator.txt").unwrap_or_default();
 
     let input = format!(
@@ -45,16 +60,28 @@ INCI:
     let client = MockAiClient;
 
     match client.execute(&prompt, &input).await {
-        Ok(response) => ModuleResult {
-            status: "PASS".into(),
-            findings: vec![response],
-            provider: "mock".into(),
-        },
+        Ok(response) => {
+            findings.push(response);
 
-        Err(error) => ModuleResult {
-            status: "FAIL".into(),
-            findings: vec![error.to_string()],
-            provider: "mock".into(),
-        },
+            ModuleResult {
+                status: if findings.is_empty() {
+                    "PASS".into()
+                } else {
+                    "WARNING".into()
+                },
+                findings,
+                provider: "rules+mock".into(),
+            }
+        }
+
+        Err(error) => {
+            findings.push(error.to_string());
+
+            ModuleResult {
+                status: "FAIL".into(),
+                findings,
+                provider: "rules+mock".into(),
+            }
+        }
     }
 }

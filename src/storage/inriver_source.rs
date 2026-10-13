@@ -1,13 +1,16 @@
-use std::collections::HashSet;
-
 use anyhow::{bail, Context, Result};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use reqwest::{
-    header::{HeaderMap, HeaderName, HeaderValue, ACCEPT},
-    Client,
-};
+header::{
+    HeaderMap,
+    HeaderName,
+    HeaderValue,
+    ACCEPT,
+    RETRY_AFTER,
+},
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::time::Duration;
 
 use crate::models::product::Product;
 
@@ -70,45 +73,6 @@ impl InriverSource {
         Ok(Self { client, config })
     }
 
-    pub async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {
-        let search_term = search_term.trim();
-
-        if search_term.is_empty() {
-            return Ok(Vec::new());
-        }
-
-        let mut entity_ids = HashSet::new();
-
-        let searchable_fields = ["ProductName", "ProductID", "ProductBrand"];
-
-        for field_type_id in searchable_fields {
-            let result = self
-                .query_products_by_field(field_type_id, "Contains", search_term)
-                .await?;
-
-            entity_ids.extend(result.entity_ids);
-        }
-
-        let mut products = Vec::new();
-
-        for entity_id in entity_ids {
-            let bundle = self.get_entity_bundle(entity_id).await?;
-
-            let product = map_inriver_entity(&bundle)?;
-
-            products.push(product);
-        }
-
-        products.sort_by(|left, right| {
-            left.product_name
-                .to_lowercase()
-                .cmp(&right.product_name.to_lowercase())
-                .then_with(|| left.sku.cmp(&right.sku))
-        });
-
-        Ok(products)
-    }
-
     pub async fn query_products(&self) -> Result<QueryResponse> {
         self.query_entities("Product", None).await
     }
@@ -158,32 +122,7 @@ impl InriverSource {
             objects: None,
         };
 
-        let url = format!(
-            "{}/api/v1.0.0/query",
-            self.config.api_url.trim_end_matches('/')
-        );
-
-        let response = self
-            .client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await
-            .context("Failed to query Inriver")?;
-
-        let status = response.status();
-
-        let body = response
-            .text()
-            .await
-            .context("Failed to read Inriver query response")?;
-
-        if !status.is_success() {
-            bail!("Inriver query failed with HTTP {}: {}", status, body);
-        }
-
-        serde_json::from_str(&body)
-            .with_context(|| format!("Failed to parse Inriver query response: {body}"))
+        self.post_query(&request).await
     }
 
     pub async fn query_products_by_field(
@@ -208,32 +147,7 @@ impl InriverSource {
             objects: None,
         };
 
-        let url = format!(
-            "{}/api/v1.0.0/query",
-            self.config.api_url.trim_end_matches('/')
-        );
-
-        let response = self
-            .client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await
-            .context("Failed to query Inriver by product field")?;
-
-        let status = response.status();
-
-        let body = response
-            .text()
-            .await
-            .context("Failed to read Inriver field query response")?;
-
-        if !status.is_success() {
-            bail!("Inriver field query failed with HTTP {}: {}", status, body);
-        }
-
-        serde_json::from_str(&body)
-            .with_context(|| format!("Failed to parse Inriver field query response: {body}"))
+        self.post_query(&request).await
     }
 
     pub async fn get_entity_summary(&self, entity_id: i64) -> Result<Value> {
@@ -304,28 +218,190 @@ impl InriverSource {
         Ok(None)
     }
 
-    async fn get_json(&self, url: &str) -> Result<Value> {
+async fn get_json(
+    &self,
+    url: &str,
+) -> Result<Value> {
+    const MAX_ATTEMPTS: u32 = 3;
+
+    for attempt in 1..=MAX_ATTEMPTS {
         let response = self
             .client
             .get(url)
             .send()
             .await
-            .with_context(|| format!("Inriver GET request failed: {url}"))?;
+            .with_context(|| {
+                format!("Inriver GET request failed: {url}")
+            })?;
 
         let status = response.status();
+
+        // Skal aflæses før response.text(), fordi text()
+        // forbruger response-objektet.
+        let delay_seconds =
+            retry_delay_seconds(
+                response.headers(),
+                attempt,
+            );
 
         let body = response
             .text()
             .await
-            .context("Failed to read Inriver response")?;
+            .context(
+                "Failed to read Inriver response",
+            )?;
 
-        if !status.is_success() {
-            bail!("Inriver request failed with HTTP {}: {}", status, body);
+        if status.is_success() {
+            return serde_json::from_str(&body)
+                .with_context(|| {
+                    format!(
+                        "Failed to parse Inriver JSON response: {body}"
+                    )
+                });
         }
 
-        serde_json::from_str(&body)
-            .with_context(|| format!("Failed to parse Inriver JSON response: {body}"))
+        if status.as_u16() == 429
+            && attempt < MAX_ATTEMPTS
+        {
+            tracing::warn!(
+                attempt = attempt,
+                max_attempts = MAX_ATTEMPTS,
+                delay_seconds = delay_seconds,
+                url = url,
+                "Inriver throttled GET request - retrying"
+            );
+
+            tokio::time::sleep(
+                Duration::from_secs(delay_seconds),
+            )
+            .await;
+
+            continue;
+        }
+
+        bail!(
+            "Inriver request failed with HTTP {}: {}",
+            status,
+            body
+        );
     }
+
+    unreachable!(
+        "Inriver GET retry loop exited unexpectedly"
+    )
+}
+
+async fn post_query(
+    &self,
+    request: &QueryRequest,
+) -> Result<QueryResponse> {
+    const MAX_ATTEMPTS: u32 = 3;
+
+    let url = format!(
+        "{}/api/v1.0.0/query",
+        self.config.api_url.trim_end_matches('/')
+    );
+
+    for attempt in 1..=MAX_ATTEMPTS {
+        let response = self
+            .client
+            .post(&url)
+            .json(request)
+            .send()
+            .await
+            .context("Failed to query Inriver")?;
+
+        let status = response.status();
+
+        // Skal aflæses før response.text().
+        let delay_seconds =
+            retry_delay_seconds(
+                response.headers(),
+                attempt,
+            );
+
+        let body = response
+            .text()
+            .await
+            .context(
+                "Failed to read Inriver query response",
+            )?;
+
+        if status.is_success() {
+            return serde_json::from_str(&body)
+                .with_context(|| {
+                    format!(
+                        "Failed to parse Inriver query response: {body}"
+                    )
+                });
+        }
+
+        if status.as_u16() == 429
+            && attempt < MAX_ATTEMPTS
+        {
+            tracing::warn!(
+                attempt = attempt,
+                max_attempts = MAX_ATTEMPTS,
+                delay_seconds = delay_seconds,
+                url = %url,
+                "Inriver throttled query request - retrying"
+            );
+
+            tokio::time::sleep(
+                Duration::from_secs(delay_seconds),
+            )
+            .await;
+
+            continue;
+        }
+
+        bail!(
+            "Inriver query failed with HTTP {}: {}",
+            status,
+            body
+        );
+    }
+
+    unreachable!(
+        "Inriver query retry loop exited unexpectedly"
+    )
+}
+}
+
+fn retry_delay_seconds(
+    headers: &HeaderMap,
+    attempt: u32,
+) -> u64 {
+    let fallback_seconds = 2_u64.pow(attempt - 1);
+
+    let Some(value) = headers.get(RETRY_AFTER) else {
+        return fallback_seconds;
+    };
+
+    let Ok(value) = value.to_str() else {
+        return fallback_seconds;
+    };
+
+    // Retry-After som antal sekunder.
+    if let Ok(seconds) = value.parse::<u64>() {
+        return seconds;
+    }
+
+    // Retry-After som HTTP-dato.
+    if let Ok(retry_at) =
+        chrono::DateTime::parse_from_rfc2822(value)
+    {
+        let now = Utc::now();
+
+        let seconds = retry_at
+            .with_timezone(&Utc)
+            .signed_duration_since(now)
+            .num_seconds();
+
+        return seconds.max(0) as u64;
+    }
+
+    fallback_seconds
 }
 
 pub fn map_inriver_entity(json: &Value) -> Result<Product> {
@@ -1212,7 +1288,92 @@ use crate::storage::product_source::ProductSource;
 #[async_trait]
 impl ProductSource for InriverSource {
     async fn products(&self) -> Result<Vec<Product>> {
-        self.search_products("").await
+        use futures::{stream, StreamExt, TryStreamExt};
+
+        let started = std::time::Instant::now();
+        let result = self.query_products().await?;
+
+        let entity_count = result.entity_ids.len();
+        let concurrency = self.config.max_concurrent_imports;
+        let source = self.clone();
+
+        tracing::info!(
+            entity_count = entity_count,
+            concurrency = concurrency,
+            "Loading all Inriver products"
+        );
+
+        let products = stream::iter(result.entity_ids)
+            .map(move |entity_id| {
+                let source = source.clone();
+
+                async move {
+                    let bundle = source.get_entity_bundle(entity_id).await?;
+
+                    let product = map_inriver_entity(&bundle)?;
+
+                    Ok::<Product, anyhow::Error>(product)
+                }
+            })
+            .buffer_unordered(concurrency)
+            .try_collect::<Vec<Product>>()
+            .await?;
+
+        tracing::info!(
+            entity_count = entity_count,
+            loaded_count = products.len(),
+            concurrency = concurrency,
+            elapsed_ms = started.elapsed().as_millis(),
+            "Loaded all Inriver products"
+        );
+
+        Ok(products)
+    }
+
+    async fn modified_products(&self, modified_since: &str) -> Result<Vec<Product>> {
+        use futures::{stream, StreamExt, TryStreamExt};
+
+        let started = std::time::Instant::now();
+
+        let result = self.query_modified_products(modified_since).await?;
+
+        let entity_count = result.entity_ids.len();
+        let concurrency = self.config.max_concurrent_imports;
+        let source = self.clone();
+
+        tracing::info!(
+            modified_since = modified_since,
+            entity_count = entity_count,
+            concurrency = concurrency,
+            "Loading modified Inriver products"
+        );
+
+        let products = stream::iter(result.entity_ids)
+            .map(move |entity_id| {
+                let source = source.clone();
+
+                async move {
+                    let bundle = source.get_entity_bundle(entity_id).await?;
+
+                    let product = map_inriver_entity(&bundle)?;
+
+                    Ok::<Product, anyhow::Error>(product)
+                }
+            })
+            .buffer_unordered(concurrency)
+            .try_collect::<Vec<Product>>()
+            .await?;
+
+        tracing::info!(
+            modified_since = modified_since,
+            entity_count = entity_count,
+            loaded_count = products.len(),
+            concurrency = concurrency,
+            elapsed_ms = started.elapsed().as_millis(),
+            "Loaded modified Inriver products"
+        );
+
+        Ok(products)
     }
 
     async fn product(&self, sku: &str) -> Result<Option<Product>> {
