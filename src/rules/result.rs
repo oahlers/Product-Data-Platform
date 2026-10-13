@@ -1,6 +1,5 @@
 #[derive(Debug, Clone)]
 pub enum Severity {
-    Info,
     Warning,
     Error,
 }

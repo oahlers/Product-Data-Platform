@@ -73,24 +73,8 @@ impl InriverSource {
         self.query_entities("Product", None).await
     }
 
-    pub async fn query_items(&self) -> Result<QueryResponse> {
-        self.query_entities("Item", None).await
-    }
-
-    pub async fn query_resources(&self) -> Result<QueryResponse> {
-        self.query_entities("Resource", None).await
-    }
-
     pub async fn query_modified_products(&self, modified_since: &str) -> Result<QueryResponse> {
         self.query_entities("Product", Some(modified_since)).await
-    }
-
-    pub async fn query_modified_items(&self, modified_since: &str) -> Result<QueryResponse> {
-        self.query_entities("Item", Some(modified_since)).await
-    }
-
-    pub async fn query_modified_resources(&self, modified_since: &str) -> Result<QueryResponse> {
-        self.query_entities("Resource", Some(modified_since)).await
     }
 
     pub async fn query_entities(
@@ -144,26 +128,6 @@ impl InriverSource {
         };
 
         self.post_query(&request).await
-    }
-
-    pub async fn get_entity_summary(&self, entity_id: i64) -> Result<Value> {
-        let url = format!(
-            "{}/api/v1.0.0/entities/{}/summary",
-            self.config.api_url.trim_end_matches('/'),
-            entity_id
-        );
-
-        self.get_json(&url).await
-    }
-
-    pub async fn get_entity_fields(&self, entity_id: i64) -> Result<Value> {
-        let url = format!(
-            "{}/api/v1.0.0/entities/{}/summary/fields",
-            self.config.api_url.trim_end_matches('/'),
-            entity_id
-        );
-
-        self.get_json(&url).await
     }
 
     pub async fn get_entity_bundle(&self, entity_id: i64) -> Result<Value> {
