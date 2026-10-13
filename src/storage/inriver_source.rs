@@ -358,8 +358,31 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
         .get("summary")
         .context("Inriver bundle is missing root summary")?;
 
+    let linked_item = find_linked_entity(json, "Item");
+
+    let linked_item_summary = linked_item.and_then(|entity| entity.get("summary"));
+
     let mut fields = Vec::new();
-    collect_fields(json, &mut fields);
+
+    // Product-felter fra root-entity
+    if let Some(root_fields) = json.get("fields") {
+        collect_fields(root_fields, &mut fields);
+    }
+
+    // Item-felter kun fra det valgte linked Item.
+    // Vi samler ikke længere felter fra samtlige linked Items.
+    if let Some(item) = linked_item {
+        if let Some(item_fields) = item.get("fields") {
+            let mut selected_item_fields = Vec::new();
+
+            collect_fields(item_fields, &mut selected_item_fields);
+
+            // Item-felter kommer først, så de vinder over
+            // eventuelle felter med samme ID på Product.
+            selected_item_fields.extend(fields);
+            fields = selected_item_fields;
+        }
+    }
 
     let sku = summary_string(summary, "displayDescription");
 
@@ -367,10 +390,7 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
         bail!("Inriver entity is missing SKU/displayDescription");
     }
 
-    let linked_item_summary = find_linked_entity_summary(json, "Item");
-
     let linked_item_name = linked_item_summary
-        .as_ref()
         .and_then(|item_summary| non_empty_string(item_summary, "displayName"))
         .unwrap_or_default();
 
@@ -468,7 +488,6 @@ pub fn map_inriver_entity(json: &Value) -> Result<Product> {
             Some(ean)
         } else {
             linked_item_summary
-                .as_ref()
                 .and_then(|item_summary| non_empty_string(item_summary, "displayDescription"))
         }
     };
@@ -701,20 +720,20 @@ fn collect_fields<'a>(value: &'a Value, output: &mut Vec<&'a Value>) {
     }
 }
 
-fn find_linked_entity_summary(value: &Value, entity_type_id: &str) -> Option<Value> {
+fn find_linked_entity<'a>(value: &'a Value, entity_type_id: &str) -> Option<&'a Value> {
     match value {
         Value::Object(object) => {
             if let Some(summary) = object.get("summary") {
                 let current_type = summary.get("entityTypeId").and_then(Value::as_str);
 
                 if current_type == Some(entity_type_id) {
-                    return Some(summary.clone());
+                    return Some(value);
                 }
             }
 
             for child in object.values() {
-                if let Some(summary) = find_linked_entity_summary(child, entity_type_id) {
-                    return Some(summary);
+                if let Some(entity) = find_linked_entity(child, entity_type_id) {
+                    return Some(entity);
                 }
             }
 
@@ -723,8 +742,8 @@ fn find_linked_entity_summary(value: &Value, entity_type_id: &str) -> Option<Val
 
         Value::Array(values) => {
             for child in values {
-                if let Some(summary) = find_linked_entity_summary(child, entity_type_id) {
-                    return Some(summary);
+                if let Some(entity) = find_linked_entity(child, entity_type_id) {
+                    return Some(entity);
                 }
             }
 
