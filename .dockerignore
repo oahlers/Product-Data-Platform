@@ -1,0 +1,11 @@
+.git
+.gitignore
+.env
+.env.*
+!.env.example
+target
+results
+data/*.json
+data/inriver_last_sync.txt
+inriver_field_dump.txt
+*.log
