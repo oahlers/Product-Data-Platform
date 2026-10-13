@@ -1,13 +1,9 @@
 use anyhow::{bail, Context, Result};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use reqwest::{
-header::{
-    HeaderMap,
-    HeaderName,
-    HeaderValue,
-    ACCEPT,
-    RETRY_AFTER,
-},
+    header::{HeaderMap, HeaderName, HeaderValue, ACCEPT, RETRY_AFTER},
+    Client,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::time::Duration;
@@ -186,6 +182,20 @@ impl InriverSource {
         map_inriver_entity(&bundle)
     }
 
+    pub async fn get_product_by_product_id(&self, product_id: &str) -> Result<Option<Product>> {
+        let result = self
+            .query_products_by_field("ProductID", "Equal", product_id)
+            .await?;
+
+        let Some(entity_id) = result.entity_ids.first().copied() else {
+            return Ok(None);
+        };
+
+        let product = self.get_product(entity_id).await?;
+
+        Ok(Some(product))
+    }
+
     pub async fn get_product_by_sku(&self, sku: &str) -> Result<Option<Product>> {
         let result = self.query_products().await?;
 
@@ -218,160 +228,107 @@ impl InriverSource {
         Ok(None)
     }
 
-async fn get_json(
-    &self,
-    url: &str,
-) -> Result<Value> {
-    const MAX_ATTEMPTS: u32 = 3;
+    async fn get_json(&self, url: &str) -> Result<Value> {
+        const MAX_ATTEMPTS: u32 = 3;
 
-    for attempt in 1..=MAX_ATTEMPTS {
-        let response = self
-            .client
-            .get(url)
-            .send()
-            .await
-            .with_context(|| {
-                format!("Inriver GET request failed: {url}")
-            })?;
+        for attempt in 1..=MAX_ATTEMPTS {
+            let response = self
+                .client
+                .get(url)
+                .send()
+                .await
+                .with_context(|| format!("Inriver GET request failed: {url}"))?;
 
-        let status = response.status();
+            let status = response.status();
 
-        // Skal aflæses før response.text(), fordi text()
-        // forbruger response-objektet.
-        let delay_seconds =
-            retry_delay_seconds(
-                response.headers(),
-                attempt,
-            );
+            // Skal aflæses før response.text(), fordi text()
+            // forbruger response-objektet.
+            let delay_seconds = retry_delay_seconds(response.headers(), attempt);
 
-        let body = response
-            .text()
-            .await
-            .context(
-                "Failed to read Inriver response",
-            )?;
+            let body = response
+                .text()
+                .await
+                .context("Failed to read Inriver response")?;
 
-        if status.is_success() {
-            return serde_json::from_str(&body)
-                .with_context(|| {
-                    format!(
-                        "Failed to parse Inriver JSON response: {body}"
-                    )
-                });
+            if status.is_success() {
+                return serde_json::from_str(&body)
+                    .with_context(|| format!("Failed to parse Inriver JSON response: {body}"));
+            }
+
+            if status.as_u16() == 429 && attempt < MAX_ATTEMPTS {
+                tracing::warn!(
+                    attempt = attempt,
+                    max_attempts = MAX_ATTEMPTS,
+                    delay_seconds = delay_seconds,
+                    url = url,
+                    "Inriver throttled GET request - retrying"
+                );
+
+                tokio::time::sleep(Duration::from_secs(delay_seconds)).await;
+
+                continue;
+            }
+
+            bail!("Inriver request failed with HTTP {}: {}", status, body);
         }
 
-        if status.as_u16() == 429
-            && attempt < MAX_ATTEMPTS
-        {
-            tracing::warn!(
-                attempt = attempt,
-                max_attempts = MAX_ATTEMPTS,
-                delay_seconds = delay_seconds,
-                url = url,
-                "Inriver throttled GET request - retrying"
-            );
-
-            tokio::time::sleep(
-                Duration::from_secs(delay_seconds),
-            )
-            .await;
-
-            continue;
-        }
-
-        bail!(
-            "Inriver request failed with HTTP {}: {}",
-            status,
-            body
-        );
+        unreachable!("Inriver GET retry loop exited unexpectedly")
     }
 
-    unreachable!(
-        "Inriver GET retry loop exited unexpectedly"
-    )
-}
+    async fn post_query(&self, request: &QueryRequest) -> Result<QueryResponse> {
+        const MAX_ATTEMPTS: u32 = 3;
 
-async fn post_query(
-    &self,
-    request: &QueryRequest,
-) -> Result<QueryResponse> {
-    const MAX_ATTEMPTS: u32 = 3;
-
-    let url = format!(
-        "{}/api/v1.0.0/query",
-        self.config.api_url.trim_end_matches('/')
-    );
-
-    for attempt in 1..=MAX_ATTEMPTS {
-        let response = self
-            .client
-            .post(&url)
-            .json(request)
-            .send()
-            .await
-            .context("Failed to query Inriver")?;
-
-        let status = response.status();
-
-        // Skal aflæses før response.text().
-        let delay_seconds =
-            retry_delay_seconds(
-                response.headers(),
-                attempt,
-            );
-
-        let body = response
-            .text()
-            .await
-            .context(
-                "Failed to read Inriver query response",
-            )?;
-
-        if status.is_success() {
-            return serde_json::from_str(&body)
-                .with_context(|| {
-                    format!(
-                        "Failed to parse Inriver query response: {body}"
-                    )
-                });
-        }
-
-        if status.as_u16() == 429
-            && attempt < MAX_ATTEMPTS
-        {
-            tracing::warn!(
-                attempt = attempt,
-                max_attempts = MAX_ATTEMPTS,
-                delay_seconds = delay_seconds,
-                url = %url,
-                "Inriver throttled query request - retrying"
-            );
-
-            tokio::time::sleep(
-                Duration::from_secs(delay_seconds),
-            )
-            .await;
-
-            continue;
-        }
-
-        bail!(
-            "Inriver query failed with HTTP {}: {}",
-            status,
-            body
+        let url = format!(
+            "{}/api/v1.0.0/query",
+            self.config.api_url.trim_end_matches('/')
         );
+
+        for attempt in 1..=MAX_ATTEMPTS {
+            let response = self
+                .client
+                .post(&url)
+                .json(request)
+                .send()
+                .await
+                .context("Failed to query Inriver")?;
+
+            let status = response.status();
+
+            // Skal aflæses før response.text().
+            let delay_seconds = retry_delay_seconds(response.headers(), attempt);
+
+            let body = response
+                .text()
+                .await
+                .context("Failed to read Inriver query response")?;
+
+            if status.is_success() {
+                return serde_json::from_str(&body)
+                    .with_context(|| format!("Failed to parse Inriver query response: {body}"));
+            }
+
+            if status.as_u16() == 429 && attempt < MAX_ATTEMPTS {
+                tracing::warn!(
+                    attempt = attempt,
+                    max_attempts = MAX_ATTEMPTS,
+                    delay_seconds = delay_seconds,
+                    url = %url,
+                    "Inriver throttled query request - retrying"
+                );
+
+                tokio::time::sleep(Duration::from_secs(delay_seconds)).await;
+
+                continue;
+            }
+
+            bail!("Inriver query failed with HTTP {}: {}", status, body);
+        }
+
+        unreachable!("Inriver query retry loop exited unexpectedly")
     }
-
-    unreachable!(
-        "Inriver query retry loop exited unexpectedly"
-    )
-}
 }
 
-fn retry_delay_seconds(
-    headers: &HeaderMap,
-    attempt: u32,
-) -> u64 {
+fn retry_delay_seconds(headers: &HeaderMap, attempt: u32) -> u64 {
     let fallback_seconds = 2_u64.pow(attempt - 1);
 
     let Some(value) = headers.get(RETRY_AFTER) else {
@@ -388,9 +345,7 @@ fn retry_delay_seconds(
     }
 
     // Retry-After som HTTP-dato.
-    if let Ok(retry_at) =
-        chrono::DateTime::parse_from_rfc2822(value)
-    {
+    if let Ok(retry_at) = chrono::DateTime::parse_from_rfc2822(value) {
         let now = Utc::now();
 
         let seconds = retry_at
@@ -1291,6 +1246,7 @@ impl ProductSource for InriverSource {
         use futures::{stream, StreamExt, TryStreamExt};
 
         let started = std::time::Instant::now();
+
         let result = self.query_products().await?;
 
         let entity_count = result.entity_ids.len();
@@ -1382,6 +1338,10 @@ impl ProductSource for InriverSource {
 
     async fn product_by_ean(&self, ean: &str) -> Result<Option<Product>> {
         self.get_product_by_ean(ean).await
+    }
+
+    async fn product_by_product_id(&self, product_id: &str) -> Result<Option<Product>> {
+        self.get_product_by_product_id(product_id).await
     }
 
     async fn search_products(&self, search_term: &str) -> Result<Vec<Product>> {

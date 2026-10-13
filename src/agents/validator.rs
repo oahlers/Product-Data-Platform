@@ -3,7 +3,7 @@ use crate::{
         client::{AiClient, MockAiClient},
         prompt_loader,
     },
-    models::{product::Product, result::ModuleResult},
+    models::{product::Product, result::ModuleResult, unified_product::UnifiedProduct},
     rules::engine,
 };
 
@@ -84,4 +84,11 @@ INCI:
             }
         }
     }
+}
+
+pub fn validate_unified(product: &UnifiedProduct) -> Vec<String> {
+    crate::rules::unified::validate(product)
+        .into_iter()
+        .map(|finding| format!("[{}] {}", finding.rule_id, finding.message))
+        .collect()
 }

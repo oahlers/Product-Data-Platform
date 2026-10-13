@@ -14,8 +14,8 @@ use anyhow::Result;
 use state::AppState;
 use std::{net::SocketAddr, sync::Arc};
 use storage::{
-    inriver_config::InriverConfig, inriver_source::InriverSource, json_store::JsonStore,
-    product_source::ProductSource,
+    golden_record_source::GoldenRecordSource, inriver_config::InriverConfig,
+    inriver_source::InriverSource, json_store::JsonStore, product_source::ProductSource,
 };
 use tokio::net::TcpListener;
 use tracing::info;
@@ -37,6 +37,8 @@ async fn main() -> Result<()> {
 
     let product_source: Arc<dyn ProductSource> = Arc::new(inriver_source);
 
+    let golden_record_source = Arc::new(GoldenRecordSource::from_env().await?);
+
     let result_store = Arc::new(JsonStore::new("data/products.json", "results"));
 
     result_store.ensure_files().await?;
@@ -45,12 +47,21 @@ async fn main() -> Result<()> {
 
     let ai_config = Arc::new(AiConfig::from_env());
 
-    let state = Arc::new(AppState::new(result_store, product_source, ai_config));
+    let state = Arc::new(AppState::new(
+        result_store,
+        product_source,
+        golden_record_source,
+        ai_config,
+    ));
 
     let mut scheduler = scheduler::start(Arc::clone(&state)).await?;
+
     let app = api::router(state);
+
     let address = SocketAddr::from(([0, 0, 0, 0], 3000));
+
     let listener = TcpListener::bind(address).await?;
+
     info!(%address, "Product Data Platform started");
 
     axum::serve(listener, app)
@@ -58,6 +69,7 @@ async fn main() -> Result<()> {
         .await?;
 
     scheduler.shutdown().await?;
+
     Ok(())
 }
 

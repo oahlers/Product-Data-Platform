@@ -15,5 +15,9 @@ pub trait ProductSource: Send + Sync {
 
     async fn product_by_ean(&self, ean: &str) -> Result<Option<Product>>;
 
+    async fn product_by_product_id(&self, _product_id: &str) -> Result<Option<Product>> {
+        Ok(None)
+    }
+
     async fn search_products(&self, search_term: &str) -> Result<Vec<Product>>;
 }
