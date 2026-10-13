@@ -6,6 +6,9 @@ pub struct Product {
     pub sku: String,
 
     #[serde(default)]
+    pub product_id: String,
+
+    #[serde(default)]
     pub upc_code: Option<String>,
 
     #[serde(default)]

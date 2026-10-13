@@ -402,11 +402,20 @@ fn map_inriver_entity_with_item_ean(json: &Value, requested_ean: Option<&str>) -
         }
     }
 
-    let sku = summary_string(summary, "displayDescription");
+    let summary_identifier = summary_string(summary, "displayDescription");
 
-    if sku.is_empty() {
-        bail!("Inriver entity is missing SKU/displayDescription");
+    let product_id = first_non_empty(&[
+        field_string(&fields, "ProductID"),
+        summary_identifier.clone(),
+    ]);
+
+    if product_id.is_empty() {
+        bail!("Inriver entity is missing ProductID");
     }
+
+    // Behold den nuværende API-adfærd indtil SKU-semantikken
+    // er opdelt fra ProductID i en senere ændring.
+    let sku = product_id.clone();
 
     let linked_item_name = linked_item_summary
         .and_then(|item_summary| non_empty_string(item_summary, "displayName"))
@@ -514,6 +523,7 @@ fn map_inriver_entity_with_item_ean(json: &Value, requested_ean: Option<&str>) -
 
     Ok(Product {
         sku,
+        product_id,
         upc_code,
         brand,
         product_name,

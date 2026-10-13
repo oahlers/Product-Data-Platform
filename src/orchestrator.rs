@@ -16,6 +16,14 @@ use crate::{
 const PROCESS_ALL_CONCURRENCY: usize = 3;
 const PROCESS_MODIFIED_CONCURRENCY: usize = 3;
 
+fn product_id_for_join(product: &Product) -> &str {
+    if product.product_id.trim().is_empty() {
+        &product.sku
+    } else {
+        &product.product_id
+    }
+}
+
 pub async fn get_unified_product(
     state: &Arc<AppState>,
     item_number: &str,
@@ -108,7 +116,7 @@ pub async fn process_item_number(state: Arc<AppState>, item_number: &str) -> Res
 pub async fn process_product(state: Arc<AppState>, product: Product) -> Result<SkuResult> {
     let golden_record = state
         .golden_record_source
-        .get_by_product_id(&product.sku)
+        .get_by_product_id(product_id_for_join(&product))
         .await?;
 
     process_product_with_golden_record(state, product, golden_record).await
@@ -146,7 +154,7 @@ pub async fn process_all(state: Arc<AppState>) -> Result<Vec<SkuResult>> {
             let golden_records = Arc::clone(&golden_records);
 
             async move {
-                let golden_record = golden_records.get(&product.sku).cloned();
+                let golden_record = golden_records.get(product_id_for_join(&product)).cloned();
 
                 process_product_with_golden_record(state, product, golden_record).await
             }
@@ -207,7 +215,7 @@ pub async fn process_modified(state: Arc<AppState>) -> Result<Vec<SkuResult>> {
             let golden_records = Arc::clone(&golden_records);
 
             async move {
-                let golden_record = golden_records.get(&product.sku).cloned();
+                let golden_record = golden_records.get(product_id_for_join(&product)).cloned();
 
                 process_product_with_golden_record(state, product, golden_record).await
             }

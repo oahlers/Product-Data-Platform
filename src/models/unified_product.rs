@@ -95,7 +95,13 @@ impl UnifiedProduct {
                 .clone()
                 .or_else(|| golden.and_then(|g| g.ean.clone())),
 
-            product_id: golden.and_then(|g| g.product_id.clone()),
+            product_id: golden.and_then(|g| g.product_id.clone()).or_else(|| {
+                if product.product_id.trim().is_empty() {
+                    None
+                } else {
+                    Some(product.product_id.clone())
+                }
+            }),
 
             item_number: golden.map(|g| g.item_number.clone()),
 
